@@ -56,12 +56,12 @@ def Employment(base):
         # user columns
         parent_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
         job = db.Column(db.String(50))
-        salery = db.Column(db.Integer())
+        salary = db.Column(db.Integer())
         start_date = db.Column(db.String(10))
         # work_duration= db.Column(db.Float(4))
      
-        def __init__(self, salery, job, start_date):  #, work_duration):
-            self.salery = salery
+        def __init__(self, salary, job, start_date):  #, work_duration):
+            self.salary = salary
             self.job = job
             self.start_date = start_date
             # self.work_duration = work_duration
@@ -253,6 +253,7 @@ class Create:
         count = 0
         p = np.exp(-np.arange(6) / 1.3)
         p /= p.sum()
+        pairs = []
         while count < no_children:
 
             parent_ids = np.hstack((None, np.arange(1, no_parents)))
@@ -270,6 +271,14 @@ class Create:
 
             if p1 is None:
                 p1, p2 = p2, p1
+
+            if (p1, p2) in pairs:
+                continue
+
+            if (p2, p1) in pairs:
+                continue
+
+            pairs.append((p1, p2))
 
             amt = np.random.choice(np.arange(6), p=p)
             amt = amt if count + amt <= no_children else no_children - count
