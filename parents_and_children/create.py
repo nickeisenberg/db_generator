@@ -121,6 +121,17 @@ def Children(base):
 
     return _Children
 
+
+def salary_generator(avg_sal):
+    if avg_sal == 0:
+        return 0
+    else:
+        sal_noise = max(
+            np.random.gamma(.1, avg_sal) - np.random.gamma(.1, avg_sal),
+            -1. * avg_sal / 2
+        )
+        return avg_sal + sal_noise
+
 class SalSavStartGen:
 
     def __init__(self, avg):
