@@ -5,7 +5,6 @@ with
     avg_salary as (
         select 
             job, 
-            avg(salary) as avg_sal,
             dense_rank() over ( order by avg(salary)) as job_ranking
         from employment
         group by job
@@ -15,16 +14,28 @@ with
     ),
     ranked_employees as (
         select 
-            parent_id,
-            employment.job,
-            salary,
-            dense_rank() over ( order by employment.salary desc) as emp_ranking
+            finances.parent_id,
+            savings,
+            dense_rank() over ( order by finances.savings desc) as emp_ranking
         from 
+            finances 
+        inner join
             employment
+        on
+            finances.parent_id = employment.parent_id
         inner join
             rank_3
         on
-            employment.job = rank_3.job
+            rank_3.job = employment.job
     )
-select * from ranked_employees where emp_ranking <= 3;
-;
+select 
+    -- remp.parent_id,
+    first_name, last_name,
+    -- employment.job,
+    remp.savings
+from mailing
+inner join ranked_employees as remp
+on mailing.parent_id = remp.parent_id
+-- inner join employment
+-- on remp.parent_id = employment.parent_id
+where remp.emp_ranking <= 3;
