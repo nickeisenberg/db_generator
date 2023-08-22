@@ -33,6 +33,8 @@ with
         left join par2c
         on par1c.parent_id = par2c.parent_id
     )
+select * from parc limit 5;
+
 select 
     case 
         when p.no_of_kids = 0 then 0
@@ -53,3 +55,8 @@ group by
         else "more than 2 kids"
     end
 ;
+
+
+
+
+
