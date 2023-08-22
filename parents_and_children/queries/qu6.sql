@@ -3,34 +3,27 @@
 -- according to their salaries.
 
 with 
-    par1 as (
+    par as (
         select 
             child_id, 
             parent1_id, 
-            salary as p1sal
-        from children as c
-        left join employment as e
-        on c.parent1_id = e.parent_id
-        where is_employed = 1
-    ),
-    par2 as (
-        select 
-            child_id, 
+            e1.salary as p1sal,
             parent2_id, 
-            salary as p2sal
+            e2.salary as p2sal,
+            same_residence
         from children as c
-        left join employment as e
-        on c.parent2_id = e.parent_id
+        left join employment as e1
+        on c.parent1_id = e1.parent_id
+        left join employment as e2
+        on c.parent2_id = e2.parent_id
         where is_employed = 1
     ),
     child_salary_rank as (
         select 
-            par1.child_id, 
+            par.child_id, 
             .3 * (p1sal + p2sal) / 2 as salary,
             dense_rank() over ( order by .3 * (p1sal + p2sal) / 2 desc) as ranking
-        from par1
-        left join par2
-        on par1.child_id = par2.child_id 
+        from par
     )
 select first_name, last_name, cr.salary
 from children as c
