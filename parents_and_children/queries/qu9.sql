@@ -40,17 +40,23 @@ with
         from top_p as tp
         left join fam_sal as fs
         on tp.parent1_id = fs.parent1_id and tp.parent2_id = fs.parent2_id
+    ),
+    top_fam_names as (
+        select 
+            tf.first_name as cf, 
+            tf.last_name as cl,
+            p1.first_name as p1f, 
+            p1.last_name as p1l,
+            p2.first_name as p2f, 
+            p2.last_name as p2l
+        from top_fam as tf
+        left join mailing as p1
+        on tf.parent1_id = p1.parent_id
+        left join mailing as p2
+        on tf.parent2_id = p2.parent_id
     )
-select 
-    tf.first_name as cf, 
-    tf.last_name as cl,
-    p1.first_name as p1f, 
-    p1.last_name as p1l,
-    p2.first_name as p2f, 
-    p2.last_name as p2l
-from top_fam as tf
-left join mailing as p1
-on tf.parent1_id = p1.parent_id
-left join mailing as p2
-on tf.parent2_id = p2.parent_id
-;
+select cf as first_name, cl as last_name from top_fam_names
+union 
+select p1f, p1l from top_fam_names
+union 
+select p2f, p2l from top_fam_names;
