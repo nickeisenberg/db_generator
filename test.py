@@ -2,6 +2,7 @@ import sqlalchemy as db
 from utils import engine_generator
 from parents_and_children.create import Create
 from sqlalchemy.orm import declarative_base as Base
+import pandas as pd
 
 # mysql
 engine = engine_generator(
@@ -23,9 +24,16 @@ database.initialize(
         no_parents=500,  # number of parents
         no_children=600,  # number of children randomly assigned to parents
         drop_db_if_exists=True,  # will drop and recreate the database if exists
+        faker_seed=0,
+        numpy_seed=0
     )
 
-import pandas as pd
+df = pd.read_sql('select * from mailing;', con=engine)
+df
 
-df = pd.read_sql('select * from children;', con=engine)
-df.shape
+df = pd.read_sql('select * from finances;', con=engine)
+df
+
+df = pd.read_sql('select * from employment;', con=engine)
+df
+

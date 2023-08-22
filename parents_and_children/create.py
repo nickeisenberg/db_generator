@@ -193,8 +193,13 @@ class Create:
         with_entries=True,
         drop_db_if_exists=True,
         no_parents=5,
-        no_children=9
+        no_children=9,
+        faker_seed=0,
+        numpy_seed=0
     ):
+
+        np.random.seed(numpy_seed) 
+        faker.Faker.seed(faker_seed)
 
         jobs = JOBS[: no_jobs]
         salary_avg = {j: SALARY_AVG[j] for j in jobs}

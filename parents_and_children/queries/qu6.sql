@@ -1,0 +1,3 @@
+-- Suppose that all of the childen who have jobs are earning %30 of what the
+-- average of their parents are earning. List the names of the top three children
+-- according to their salaries.

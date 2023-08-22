@@ -86,9 +86,11 @@ database.initialize(
         no_jobs=5,  # there are 15 possible jobs
         include_unemployed=True,  # this will include unemployment
         with_entries=True,  # populate the database with <no_parents> entries
+        drop_db_if_exists=True,  # will drop and recreate the database if exists
         no_parents=5,  # number of parents
         no_children=10,  # number of children randomly assigned to parents
-        drop_db_if_exists=True,  # will drop and recreate the database if exists
+        faker_seed=0,  # set the faker seed for reproducibility
+        numpy_seed=0  # set the numpy seed for reproducibility
     )
 ```
 
