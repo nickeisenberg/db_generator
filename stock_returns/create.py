@@ -1,23 +1,21 @@
 import sqlalchemy as db
 from sqlalchemy.orm import declarative_base as Base
 from sqlalchemy_utils import create_database, database_exists, drop_database
-import faker
 import numpy as np
-from stock_returns.utils import get_prices
-
-_fk = faker.Faker()
+import datetime as dt
+import yfinance as yf
 
 _base = Base()
 
-def OHLC(base):
+def OHLCV(base):
 
-    class _OHLC(base):
+    class _OHLCV(base):
         # table name for User model
-        __tablename__ = "ohlc"
+        __tablename__ = "ohlcv"
     
         # user columns
         datetime = db.Column(
-            db.String(20), primary_key=True, autoincrement=False
+            db.String(25), primary_key=True, autoincrement=False
         )
         ticker = db.Column(
             db.String(5), primary_key=True, autoincrement=False
@@ -27,18 +25,18 @@ def OHLC(base):
         low = db.Column(db.Float())
         close = db.Column(db.Float())
         volume = db.Column(db.Float())
-        unix_timestamp = db.Column(db.Integer())
+        timestamp = db.Column(db.Integer())
      
         def __init__(
             self,
+            datetime,
             ticker,
             open,
             high,
             low,
             close,
             volume,
-            unix_timestamp,
-            datetime
+            timestamp,
         ):
             self.ticker = ticker
             self.open = open 
@@ -46,10 +44,10 @@ def OHLC(base):
             self.low = low
             self.close = close
             self.volume = volume
-            self.unix_timestamp = unix_timestamp
+            self.timestamp = timestamp
             self.datetime = datetime 
 
-    return _OHLC
+    return _OHLCV
 
 
 class Create:
@@ -58,27 +56,22 @@ class Create:
         self,
         engine,
         base=_base,
-        OHLC=OHLC,
+        OHLCV=OHLCV
     ):
         self.engine = engine
         self.base = base
-        self.OHLC = OHLC(base)
+        self.OHLCV = OHLCV(base)
         self._initialized = False
 
-
     def initialize(
-            self,
-        tickers,
-        ohlc,
+        self,
+        tickers=None,
+        start=None,
+        end=None,
+        time_step='1m',
         with_entries=True,
         drop_db_if_exists=True,
-        faker_seed=0,
-        numpy_seed=0
     ):
-
-        np.random.seed(numpy_seed) 
-        faker.Faker.seed(faker_seed)
-
 
         if self._initialized:
           raise Exception("Database already initialized.")
@@ -94,5 +87,65 @@ class Create:
 
         self._initialized = True
         
-        if not with_entries:
+        if with_entries:
+            tickers = ['SPY', 'QQQ', 'VTI']
+            start = dt.datetime(2023, 8, 1, 4 - 3)
+            end = dt.datetime(2023, 8, 5, 8 - 3)
+        else:
             return None
+        
+        # contining the initialization with entries
+        elapsed_time = (end - start).total_seconds()
+        batch_time = 60 * 60 * 24 * 5
+        
+        batch_no = 0
+        while batch_no * batch_time < elapsed_time:
+            batch_no += 1
+
+            df = yf.download(
+                tickers=tickers,
+                start=start + dt.timedelta(seconds = batch_time * (batch_no - 1)),
+                end=min(
+                    start + dt.timedelta(seconds = batch_time * batch_no), 
+                    end
+                ),
+                interval=time_step,
+                prepost=True
+            )
+
+
+            df.index = df.index.to_series().apply(
+                lambda x: str(x)[: -6]
+            ).reset_index(drop=True)
+
+            df.columns.names = ['ohlcv', 'ticker']
+
+            for ticker in tickers:
+
+                query = f"ticker == '{ticker}' "
+                query += "and ohlcv in ['Open', 'High', 'Low', 'Close', 'Volume']"
+                sub_df = df.T.query(
+                    query
+                ).T.reset_index()
+                
+                sub_df['timestamp'] = [
+                    dt.datetime.strptime(
+                        npdt, '%Y-%m-%d %H:%M:%S'
+                    ).timestamp() for npdt in sub_df['Datetime'].values
+                ]
+
+                sub_df.insert(1, 'ticker', np.repeat(ticker, len(sub_df)))
+
+                sub_df.columns = [
+                    x.lower() 
+                    for x in sub_df.columns.get_level_values('ohlcv').values
+                ]
+                cols = [
+                    'datetime', 'ticker', 'open',
+                    'high', 'low', 'close', 'volume', 'timestamp'
+                ]
+                # sub_df = sub_df[cols]
+                sub_df[cols].to_sql(
+                    'ohlcv', self.engine, if_exists='append', index=False)
+
+
