@@ -87,20 +87,32 @@ class Create:
 
         self._initialized = True
         
-        if with_entries:
-            tickers = ['SPY', 'QQQ', 'VTI']
-            start = dt.datetime(2023, 8, 1, 4 - 3)
-            end = dt.datetime(2023, 8, 5, 8 - 3)
-        else:
+        if not with_entries:
             return None
+
+        if tickers is None:
+                tickers = ['SPY', 'QQQ', 'VTI']
+
+        if end is None:
+            end = dt.datetime.now().replace(
+                hour=20-3, minute=0, second=0, microsecond=0
+            )
+
+        if start is None:
+            start = dt.datetime.now().replace(
+                hour=4-3, minute=0, second=0, microsecond=0
+            ) - dt.timedelta(days=29)
         
         # contining the initialization with entries
         elapsed_time = (end - start).total_seconds()
-        batch_time = 60 * 60 * 24 * 5
+        batch_time = 60 * 60 * 24 * 7
         
         batch_no = 0
         while batch_no * batch_time < elapsed_time:
             batch_no += 1
+            print(
+                f'batch {batch_no} / {elapsed_time // batch_time + 1}'
+            )
 
             df = yf.download(
                 tickers=tickers,
