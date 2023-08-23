@@ -241,18 +241,14 @@ class Create:
             sal_sav = SalSavStartGen(salary_avg[job])
             employment = self.Employment(
                 sal_sav.salary,
-                # salary_generator(SALARY_AVG[job]),
                 job,
                 sal_sav.startdate,
-                # startdate_generator(),
-                # sal_sav.work_duration
             )
             session.add(employment)
 
             finances = self.Finances(
                 _fk.bban(),
                 sal_sav.savings,
-                # savings_generator(SALARY_AVG[job]),
             )
             session.add(finances)
         

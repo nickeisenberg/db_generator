@@ -1,10 +1,9 @@
 import sqlalchemy as db
-from utils import engine_generator
 from parents_and_children.create import Create
 from sqlalchemy.orm import declarative_base as Base
 import pandas as pd
+from utils import engine_generator
 
-# mysql
 engine = engine_generator(
     dialect='mysql', 
     driver='pymysql', 
@@ -13,6 +12,10 @@ engine = engine_generator(
     port='3306',
     db='practice',
     unix_socket='/tmp/mysql.sock'
+)
+
+engine = db.create_engine(
+    "mysql+pymysql://root:@127.0.0.1:3306/practice?unix_socket=/tmp/mysql.sock"
 )
 
 base = Base()
