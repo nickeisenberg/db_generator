@@ -1,3 +1,5 @@
+import numpy as np
+from scipy.signal import medfilt
 from stock_returns.create import Create
 import sqlalchemy as db
 from sqlalchemy.orm import declarative_base as Base

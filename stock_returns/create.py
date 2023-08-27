@@ -1,11 +1,14 @@
 import sqlalchemy as db
 from sqlalchemy.orm import declarative_base as Base
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import create_database, database_exists, drop_database
 import numpy as np
 import datetime as dt
 import yfinance as yf
 
+
 _base = Base()
+
 
 def OHLCV(base):
 
@@ -15,7 +18,7 @@ def OHLCV(base):
     
         # user columns
         datetime = db.Column(
-            db.String(25), primary_key=True, autoincrement=False
+            db.DateTime(), primary_key=True, autoincrement=False
         )
         ticker = db.Column(
             db.String(5), primary_key=True, autoincrement=False
@@ -38,6 +41,7 @@ def OHLCV(base):
             volume,
             timestamp,
         ):
+            self.datetime = datetime 
             self.ticker = ticker
             self.open = open 
             self.high = high
@@ -45,9 +49,79 @@ def OHLCV(base):
             self.close = close
             self.volume = volume
             self.timestamp = timestamp
-            self.datetime = datetime 
 
     return _OHLCV
+
+def TransactionHistory(base):
+
+    class _TransactionHistory(base):
+        # table name for User model
+        __tablename__ = "transaction_history"
+    
+        # user columns
+        datetime = db.Column(
+            db.DateTime(), primary_key=True, autoincrement=False
+        )
+        ticker = db.Column(
+            db.String(6), primary_key=True, autoincrement=False
+        )
+        action = db.Column(
+            db.Integer()
+        )
+        no_shares = db.Column(db.Float())
+        at_price = db.Column(db.Float())
+     
+        def __init__(
+            self,
+            datetime,
+            ticker,
+            action,
+            no_shares,
+            at_price
+        ):
+            self.datetime = datetime 
+            self.ticker = ticker 
+            self.action = action
+            self.no_shares = no_shares
+            self.at_price = at_price
+
+    return _TransactionHistory 
+
+
+def Portfolio(base):
+
+    class _Portfolio(base):
+        # table name for User model
+        __tablename__ = "transaction_history"
+    
+        # user columns
+        ticker = db.Column(
+            db.String(6), primary_key=True, autoincrement=False
+        )
+        action = db.Column(
+            db.Integer()
+        )
+        position = db.Column(
+            db.Integer()
+        )
+        avg_price = db.Column(db.Float())
+        gain = db.Column(db.Float())
+     
+        def __init__(
+            self,
+            ticker,
+            action,
+            position,
+            avg_price,
+            gain,
+        ):
+            self.ticker = ticker
+            self.action = action
+            self.position = position 
+            self.avg_price = avg_price
+            self.gain = gain
+
+    return _Portfolio 
 
 
 class Create:

@@ -4,18 +4,9 @@ from sqlalchemy.orm import declarative_base as Base
 import pandas as pd
 from utils import engine_generator
 
-engine = engine_generator(
-    dialect='mysql', 
-    driver='pymysql', 
-    username='root', 
-    host='127.0.0.1',
-    port='3306',
-    db='practice',
-    unix_socket='/tmp/mysql.sock'
-)
-
+dbname = 'parents_and_children'
 engine = db.create_engine(
-    "mysql+pymysql://root:@127.0.0.1:3306/practice?unix_socket=/tmp/mysql.sock"
+    f"mysql+pymysql://root:@127.0.0.1:3306/{dbname}?unix_socket=/tmp/mysql.sock"
 )
 
 base = Base()
@@ -31,12 +22,10 @@ database.initialize(
         numpy_seed=0
     )
 
-df = pd.read_sql('select * from mailing;', con=engine)
-df
+#--------------------------------------------------
+# run some queries
 
-df = pd.read_sql('select * from finances;', con=engine)
-df
-
-df = pd.read_sql('select * from employment;', con=engine)
-df
+query = 'select * from mailing;'
+df = pd.read_sql(query, con=engine)
+print(df)
 
