@@ -1,10 +1,12 @@
 import sqlalchemy as db
+from sqlalchemy import event
 from sqlalchemy.orm import declarative_base as Base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import create_database, database_exists, drop_database
 import numpy as np
 import datetime as dt
 import yfinance as yf
+from stock_returns.trigger import trigger
 
 
 _base = Base()
@@ -59,11 +61,17 @@ def TransactionHistory(base):
         __tablename__ = "transaction_history"
     
         # user columns
+        id = db.Column(
+            db.Integer(), primary_key=True, autoincrement=True
+        )
         datetime = db.Column(
-            db.DateTime(), primary_key=True, autoincrement=False
+            db.DateTime()
         )
         ticker = db.Column(
-            db.String(6), primary_key=True, autoincrement=False
+            db.String(6),
+        )
+        position_type = db.Column(
+            db.Integer()
         )
         action = db.Column(
             db.Integer()
@@ -75,12 +83,14 @@ def TransactionHistory(base):
             self,
             datetime,
             ticker,
+            position_type,
             action,
             no_shares,
             at_price
         ):
             self.datetime = datetime 
             self.ticker = ticker 
+            self.position_type = position_type 
             self.action = action
             self.no_shares = no_shares
             self.at_price = at_price
@@ -92,33 +102,42 @@ def Portfolio(base):
 
     class _Portfolio(base):
         # table name for User model
-        __tablename__ = "transaction_history"
+        __tablename__ = "portfolio"
     
         # user columns
         ticker = db.Column(
             db.String(6), primary_key=True, autoincrement=False
         )
-        action = db.Column(
-            db.Integer()
+        position_type = db.Column(
+            db.Integer, primary_key=True, autoincrement=False
         )
         position = db.Column(
             db.Integer()
         )
-        avg_price = db.Column(db.Float())
+        last_price = db.Column(db.Float())
+        cost_basis = db.Column(db.Float())
+        current_value = db.Column(db.Float())
+        realized_profit = db.Column(db.Float())
         gain = db.Column(db.Float())
      
         def __init__(
             self,
             ticker,
-            action,
+            position_type,
             position,
-            avg_price,
-            gain,
+            last_price,
+            cost_basis,
+            current_value,
+            realized_profit,
+            gain
         ):
             self.ticker = ticker
-            self.action = action
+            self.position_type = position_type 
             self.position = position 
-            self.avg_price = avg_price
+            self.last_price = last_price 
+            self.cost_basis = cost_basis
+            self.current_value = current_value 
+            self.realized_profit = realized_profit 
             self.gain = gain
 
     return _Portfolio 
@@ -130,20 +149,29 @@ class Create:
         self,
         engine,
         base=_base,
-        OHLCV=OHLCV
+        OHLCV=OHLCV,
+        TransactionHistory=TransactionHistory,
+        Portfolio=Portfolio
     ):
         self.engine = engine
         self.base = base
         self.OHLCV = OHLCV(base)
+        self.TransactionHistory = TransactionHistory(base)
+        self.Portfolio = Portfolio(base)
         self._initialized = False
 
     def initialize(
         self,
-        tickers=None,
-        start=None,
-        end=None,
-        time_step='1m',
         with_entries=True,
+        with_trigger=False,
+        tickers = ['SPY', 'QQQ', 'VTI'],
+        start = dt.datetime.now().replace(
+            hour=4-3, minute=0, second=0, microsecond=0
+        ) - dt.timedelta(days=29),
+        end = dt.datetime.now().replace(
+            hour=20-3, minute=0, second=0, microsecond=0
+        ),
+        time_step='1m',
         drop_db_if_exists=True,
     ):
 
@@ -158,26 +186,20 @@ class Create:
             create_database(self.engine.url) 
 
         self.base.metadata.create_all(bind=self.engine)
+        
+        if with_trigger:
+            with self.engine.connect() as conn:
+                conn.execute(
+                    db.text(trigger())
+                )
+                conn.commit()
 
         self._initialized = True
         
         if not with_entries:
             return None
-
-        if tickers is None:
-                tickers = ['SPY', 'QQQ', 'VTI']
-
-        if end is None:
-            end = dt.datetime.now().replace(
-                hour=20-3, minute=0, second=0, microsecond=0
-            )
-
-        if start is None:
-            start = dt.datetime.now().replace(
-                hour=4-3, minute=0, second=0, microsecond=0
-            ) - dt.timedelta(days=29)
         
-        # contining the initialization with entries
+        # batch the time for yfinance stock scraping
         elapsed_time = (end - start).total_seconds()
         batch_time = 60 * 60 * 24 * 7
         
@@ -199,11 +221,12 @@ class Create:
                 prepost=True
             )
 
-
+            # remove the GMT time part that yfinaces gives
             df.index = df.index.to_series().apply(
                 lambda x: str(x)[: -6]
             ).reset_index(drop=True)
-
+            
+            # rename the multicolumn
             df.columns.names = ['ohlcv', 'ticker']
 
             for ticker in tickers:
@@ -221,7 +244,8 @@ class Create:
                 ]
 
                 sub_df.insert(1, 'ticker', np.repeat(ticker, len(sub_df)))
-
+                
+                # add a columns with just the ticker repeated
                 sub_df.columns = [
                     x.lower() 
                     for x in sub_df.columns.get_level_values('ohlcv').values
@@ -230,8 +254,10 @@ class Create:
                     'datetime', 'ticker', 'open',
                     'high', 'low', 'close', 'volume', 'timestamp'
                 ]
-                # sub_df = sub_df[cols]
+                
+                # push to the sql server
                 sub_df[cols].to_sql(
                     'ohlcv', self.engine, if_exists='append', index=False)
+
 
 
