@@ -6,7 +6,7 @@ from sqlalchemy_utils import create_database, database_exists, drop_database
 import numpy as np
 import datetime as dt
 import yfinance as yf
-from stock_returns.trigger import trigger
+from stock_returns.trigger import convert_sql_trigger_to_string
 
 
 _base = Base()
@@ -190,7 +190,11 @@ class Create:
         if with_trigger:
             with self.engine.connect() as conn:
                 conn.execute(
-                    db.text(trigger())
+                    db.text(
+                        convert_sql_trigger_to_string(
+                            './stock_returns/trigger.sql'
+                        )
+                    )
                 )
                 conn.commit()
 

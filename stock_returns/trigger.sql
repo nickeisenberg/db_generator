@@ -1,4 +1,3 @@
-delimiter |
 create trigger
     update_inv
 after insert on
@@ -7,17 +6,17 @@ for each row
 begin
 if (new.position_type > 0 and new.action > 0) then
         INSERT INTO
-            inventory
+            portfolio
         values 
             (
-                new.ticker, -- ticker 
-                new.position_type, -- position_type 
-                new.no_shares,  -- position
-                new.at_price,  -- last_price
-                new.at_price,  -- cost_basis
-                new.at_price * new.no_shares,  -- current_value
-                0,  -- realized_profit
-                0  -- gain
+                new.ticker, 
+                new.position_type,
+                new.no_shares,
+                new.at_price,
+                new.at_price,
+                new.at_price * new.no_shares,
+                0,
+                0
             ) 
         ON DUPLICATE KEY UPDATE
             position = position + new.no_shares,
@@ -32,7 +31,7 @@ if (new.position_type > 0 and new.action > 0) then
                 current_value + realized_profit - (position * cost_basis)
             ) / (position * cost_basis);
 elseif (new.position_type > 0 and new.action < 0) then
-        UPDATE inventory SET
+        UPDATE portfolio SET
             position = position - new.no_shares,
             last_price = new.at_price,
             cost_basis = cost_basis,
@@ -44,17 +43,17 @@ elseif (new.position_type > 0 and new.action < 0) then
         where position_type = new.position_type and ticker = new.ticker;
 elseif (new.position_type < 0 and new.action < 0) then
         INSERT INTO
-            inventory
+            portfolio
         values 
             (
-                new.ticker, -- ticker 
-                new.position_type, -- position_type 
-                new.no_shares * -1.0,  -- position
-                new.at_price,  -- last_price
-                new.at_price,  -- cost_basis
-                new.at_price * new.no_shares * -1.0,  -- current_value
-                new.at_price * new.no_shares,  -- realized_profit 
-                0  -- gain
+                new.ticker,
+                new.position_type,
+                new.no_shares * -1.0,
+                new.at_price,
+                new.at_price,
+                new.at_price * new.no_shares * -1.0,
+                new.at_price * new.no_shares,
+                0
             ) 
         ON DUPLICATE KEY UPDATE 
             position = position - new.no_shares,
@@ -67,7 +66,7 @@ elseif (new.position_type < 0 and new.action < 0) then
             realized_profit = realized_profit + (new.at_price * new.no_shares),
             gain = 100.0 * (realized_profit + current_value) / realized_profit;
 elseif (new.position_type < 0 and new.action > 0) then
-        UPDATE inventory SET
+        UPDATE portfolio SET
             position = position + new.no_shares,
             last_price = new.at_price,
             cost_basis = cost_basis,
@@ -77,5 +76,3 @@ elseif (new.position_type < 0 and new.action > 0) then
         where position_type = new.position_type and ticker = new.ticker;
 end if;
 end;
-|
-delimiter ;

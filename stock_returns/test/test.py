@@ -14,7 +14,7 @@ engine = db.create_engine(
 base = Base()
 database = Create(engine=engine, base=base)
 
-database.initialize(tickers=['AMZN', 'VOO'])
+database.initialize(tickers=['AMZN', 'VOO'], with_trigger=True)
 
 
 #--------------------------------------------------
@@ -44,3 +44,5 @@ df = pd.read_sql(query, engine)
 
 query = "select * from portfolio"
 df = pd.read_sql(query, engine)
+
+df

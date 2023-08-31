@@ -10,6 +10,7 @@ def convert_sql_trigger_to_string(filepath):
     return sql_code
 
 
+
 def trigger():
 
     query = 'create trigger '
