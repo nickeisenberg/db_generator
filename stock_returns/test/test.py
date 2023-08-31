@@ -18,38 +18,13 @@ database.initialize()
 
 #--------------------------------------------------
 
-
-query = f"select datetime from ohlcv where ticker='AMZN'"
-open = pd.read_sql(query, engine)
-
-
-l = open['datetime'].values[0].astype(str)[:10]
-r = open['datetime'].values[0].astype(str)[11:-10]
-
-l + ' ' + r
-
-
-# test the trigger
 query = "select * from transaction_history"
 df = pd.read_sql(query, engine)
-data = [
-    [1, dt.datetime(2023, 1, 1, 6, 0, 0), 'spy', 1, 1, 5, 10],
-    [2, dt.datetime(2023, 1, 1, 6, 0, 0), 'spy', 1, 1, 5, 20],
-    [3, dt.datetime(2023, 1, 1, 7, 0, 0), 'spy', 1, -1, 5, 15],
-    [4, dt.datetime(2023, 1, 1, 8, 0, 0), 'spy', 1, 1, 5, 10],
-    [5, dt.datetime(2023, 1, 1, 8, 0, 0), 'spy', -1, -1, 5, 20],
-    [6, dt.datetime(2023, 1, 1, 8, 0, 0), 'spy', -1, -1, 5, 10],
-    [7, dt.datetime(2023, 1, 1, 8, 0, 0), 'spy', -1, 1, 5, 5]
-]
-pd.concat(
-    (df, pd.DataFrame(data, columns=df.columns))
-).to_sql('transaction_history', engine, if_exists='append', index=False)
 
-# see if the tirgger worked
-query = "select * from transaction_history"
-df = pd.read_sql(query, engine)
+df
 
 query = "select * from portfolio"
 df = pd.read_sql(query, engine)
 
 df
+

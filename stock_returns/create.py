@@ -286,7 +286,7 @@ class Create:
                 "NVDA": [
                     (dates[int(dates.size * .3)], 1, 10), 
                     (dates[int(dates.size * .8)], 1, 50), 
-                    (dates[int(dates.size * .9)], -1, 60), 
+                    (dates[int(dates.size * .9)], -1, 40), 
                 ],
             }
 
@@ -298,7 +298,7 @@ class Create:
                 ],
                 "NVDA": [
                     (dates[int(dates.size * .9)], -1, 10), 
-                    (dates[int(dates.size * .98)], 1, 10) 
+                    (dates[int(dates.size * .98)], 1, 4) 
                 ],
             }
             
@@ -321,7 +321,7 @@ class Create:
 
             for ticker in short_invs.keys():
                 for trans in short_invs[ticker]:
-                    datetime, action, no_shares = short_invs[ticker]
+                    datetime, action, no_shares = trans 
                     l = datetime[:10]
                     r = datetime[11: -10]
                     query = f"select open from ohlcv "
