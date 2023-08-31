@@ -163,7 +163,6 @@ class Create:
     def initialize(
         self,
         with_entries=True,
-        with_trigger=False,
         tickers = ['SPY', 'QQQ', 'VTI'],
         start = dt.datetime.now().replace(
             hour=4-3, minute=0, second=0, microsecond=0
@@ -172,6 +171,8 @@ class Create:
             hour=20-3, minute=0, second=0, microsecond=0
         ),
         time_step='1m',
+        with_trigger=True,
+        trigger_path='./stock_returns/trigger.sql',
         drop_db_if_exists=True,
     ):
 
@@ -191,9 +192,7 @@ class Create:
             with self.engine.connect() as conn:
                 conn.execute(
                     db.text(
-                        convert_sql_trigger_to_string(
-                            './stock_returns/trigger.sql'
-                        )
+                        convert_sql_trigger_to_string(trigger_path)
                     )
                 )
                 conn.commit()
