@@ -27,4 +27,3 @@ query = "select * from portfolio"
 df = pd.read_sql(query, engine)
 
 df
-
