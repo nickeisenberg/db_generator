@@ -14,13 +14,20 @@ engine = db.create_engine(
 base = Base()
 database = Create(engine=engine, base=base)
 
-database.initialize(tickers=['AMZN', 'VOO'], with_trigger=True)
-
+database.initialize()
 
 #--------------------------------------------------
-query = "select * from ohlcv where ticker = 'AMZN' "
-query += "and datetime < '2023-08-20'"
-df = pd.read_sql(query, engine)
+
+
+query = f"select datetime from ohlcv where ticker='AMZN'"
+open = pd.read_sql(query, engine)
+
+
+l = open['datetime'].values[0].astype(str)[:10]
+r = open['datetime'].values[0].astype(str)[11:-10]
+
+l + ' ' + r
+
 
 # test the trigger
 query = "select * from transaction_history"

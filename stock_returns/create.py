@@ -6,7 +6,8 @@ from sqlalchemy_utils import create_database, database_exists, drop_database
 import numpy as np
 import datetime as dt
 import yfinance as yf
-from stock_returns.trigger import convert_sql_trigger_to_string
+import pandas as pd
+from stock_returns.utils import convert_sql_trigger_to_string
 
 
 _base = Base()
@@ -163,7 +164,7 @@ class Create:
     def initialize(
         self,
         with_entries=True,
-        tickers = ['SPY', 'QQQ', 'VTI'],
+        tickers = ['SPY', 'NVDA', 'AMZN'],
         start = dt.datetime.now().replace(
             hour=4-3, minute=0, second=0, microsecond=0
         ) - dt.timedelta(days=29),
@@ -173,6 +174,7 @@ class Create:
         time_step='1m',
         with_trigger=True,
         trigger_path='./stock_returns/trigger.sql',
+        with_investments=True,
         drop_db_if_exists=True,
     ):
 
@@ -204,7 +206,7 @@ class Create:
         
         # batch the time for yfinance stock scraping
         elapsed_time = (end - start).total_seconds()
-        batch_time = 60 * 60 * 24 * 7
+        batch_time = 60 * 60 * 24 * 5
         
         batch_no = 0
         while batch_no * batch_time < elapsed_time:
@@ -212,7 +214,6 @@ class Create:
             print(
                 f'batch {batch_no} / {elapsed_time // batch_time + 1}'
             )
-
             df = yf.download(
                 tickers=tickers,
                 start=start + dt.timedelta(seconds = batch_time * (batch_no - 1)),
@@ -261,6 +262,83 @@ class Create:
                 # push to the sql server
                 sub_df[cols].to_sql(
                     'ohlcv', self.engine, if_exists='append', index=False)
+
+        if with_investments:
+
+            query = f"select datetime from ohlcv"
+            dates = pd.read_sql(
+                query, self.engine
+            )['datetime'].values.astype(str)
+
+            long_invs = {
+                "SPY": [
+                    (dates[int(dates.size * 0)], 1, 20), 
+                    (dates[int(dates.size * .2)], 1, 10), 
+                    (dates[int(dates.size * .25)], -1, 15), 
+                    (dates[int(dates.size * .7)], -1, 3), 
+                    (dates[int(dates.size * .8)], 1, 10)
+                ],
+                "AMZN": [
+                    (dates[int(dates.size * 0)], 1, 32), 
+                    (dates[int(dates.size * .5)], 1, 100), 
+                    (dates[int(dates.size * .9)], -1, 100), 
+                ],
+                "NVDA": [
+                    (dates[int(dates.size * .3)], 1, 10), 
+                    (dates[int(dates.size * .8)], 1, 50), 
+                    (dates[int(dates.size * .9)], -1, 60), 
+                ],
+            }
+
+            short_invs = {
+                "AMZN": [
+                    (dates[int(dates.size * .21)], -1, 20), 
+                    (dates[int(dates.size * .4)], 1, 10), 
+                    (dates[int(dates.size * .8)], -1, 100) 
+                ],
+                "NVDA": [
+                    (dates[int(dates.size * .9)], -1, 10), 
+                    (dates[int(dates.size * .98)], 1, 10) 
+                ],
+            }
+            
+            session  = sessionmaker(bind=self.engine)()
+
+            for ticker in long_invs.keys():
+                for trans in long_invs[ticker]:
+                    datetime, action, no_shares = trans
+                    l = datetime[:10]
+                    r = datetime[11: -10]
+                    query = f"select open from ohlcv "
+                    query += f"where datetime = '{l + ' ' + r}' "
+                    query += f"and ticker = '{ticker}'"
+                    open = pd.read_sql(query, self.engine)['open'].values[0]
+
+                    transaction = self.TransactionHistory(
+                        datetime, ticker, 1, action, no_shares, open
+                    )
+                    session.add(transaction)
+
+            for ticker in short_invs.keys():
+                for trans in short_invs[ticker]:
+                    datetime, action, no_shares = short_invs[ticker]
+                    l = datetime[:10]
+                    r = datetime[11: -10]
+                    query = f"select open from ohlcv "
+                    query += f"where datetime = '{l + ' ' + r}' "
+                    query += f"and ticker = '{ticker}'"
+                    open = pd.read_sql(query, self.engine)['open'].values[0]
+
+                    transaction = self.TransactionHistory(
+                        datetime, ticker, -1, action, no_shares, open
+                    )
+                    session.add(transaction)
+
+            session.commit()
+            session.close()
+
+        return None
+
 
 
 
