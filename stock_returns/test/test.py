@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.signal import medfilt
-from stock_returns.create import Create
+from stock_returns.create import Create, OHLCV
 import sqlalchemy as db
 from sqlalchemy.orm import declarative_base as Base
 import pandas as pd
