@@ -16,39 +16,34 @@ _base = Base()
 def OHLCV(base):
     """
     This function takes a SQLAlchemy declarative_base and returns a SQLAlchemy 
-    table/mapper.
+    table/mapper. The mapper will take the open, low, high, close and volume
+    of a stock during a specified time period as well as the datetime 
+    and timestamp from the beginning of the time period and the timestep from
+    the open of a period to the close of a period and map it to a row in a 
+    database titled "ohlcv". The mapper contains of an underlying sqlalchemy
+    metadata object that can be combined with an engine to create the table
+    if it does not exist. See example usage below.
     
-    Parameters:
-    base (sqlalchemy.orm.declarative_base)
+    Parameters
     --------------------------------------------------
+    base : sqlalchemy.orm.declarative_base
+        A declarative_base that will be inheirited by the underlying class
+       
 
-    Returns:
-    _OHLCV (SQLAlchemy table/mapper class). 
+    Returns
     --------------------------------------------------
+    _OHLCV(base) : SQLAlchemy table/mapper class 
+        _OHLCV maps rows to a sql table names "ohlcv" under a 
+        sqlalchemy.orm.sessionmaker setting. 
 
-    _OHLCVwill maps rows to a sql table names "ohlcv" under a 
-    sqlalchemy.orm.sessionmaker setting. 
-    The _OHLCV.__init__() takes the following parameters.
-
-    Parameters:
-    --------------------------------------------------
-    datetime (datetime.datetime)
-    ticker (str) : stock ticker
-    open (float) : open price of the period
-    high (float) : high price of the period
-    low (float) : low price of the period
-    close (float : close price of the period)
-    volume (float) : volume price of the period
-    timestamp (float) : unix timestamp
-
-    Example Usage:
+    Example Usage
     --------------------------------------------------
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy.orm import declarative_base as Base
     
     base = Base()
-    ohlcv = OHLCV(base)
+    _OHLCV = OHLCV(base)
 
     engine = create_engine(...)
 
@@ -58,7 +53,9 @@ def OHLCV(base):
 
     session = sessionmaker(bind=engine)()
 
-    entry = ohlcv(datetime, ticker, open, high, low, close, volumne, timestamp)
+    entry = _OHLCV(
+        datetime, ticker, open, high, low, close, volumne, timestamp
+    )
 
     session.add(entry)
     session.commit()
@@ -94,6 +91,32 @@ def OHLCV(base):
             volume,
             timestamp,
         ):
+            """
+            Parameters
+            --------------------------------------------------
+            datetime : datetime.datetime
+                The datetime from the start of the period for the stock price
+            ticker : str
+                stock ticker
+            open : float 
+                open price of the period
+            high : float
+                high price of the period
+            low : float 
+                low price of the period
+            close : float 
+                close price of the period
+            volume : float
+                volume price of the period
+            timestamp : float 
+                unix timestamp of the datetime
+
+            Returns
+            --------------------------------------------------
+            A mapable object that can be sent to a sql table with the use of
+            sqlalchemy.creat_engine and sqlalchemy.orm.sessionmaker. See 
+            example usage in help(OHLCV)
+            """
             self.datetime = datetime 
             self.ticker = ticker
             self.open = open 
@@ -105,41 +128,36 @@ def OHLCV(base):
 
     return _OHLCV
 
+
 def TransactionHistory(base):
     """
     This function takes a SQLAlchemy declarative_base and returns a SQLAlchemy 
-    table/mapper.
+    table/mapper. The mapper will take information of a stock transaction and 
+    return a mappable object that can then be sent sql table titled
+    "transaction_history". The mapper contains of an underlying sqlalchemy
+    metadata object that can be combined with an engine to create the table
+    if it does not exist. See example usage below.
     
-    Parameters:
-    base (sqlalchemy.orm.declarative_base)
+    Parameters
     --------------------------------------------------
+    base : sqlalchemy.orm.declarative_base
+        A declarative_base that will be inheirited by the underlying class
+       
 
-    Returns:
-    _Transaction_History (SQLAlchemy table/mapper class). 
+    Returns
     --------------------------------------------------
+    _Transaction_History(base) : SQLAlchemy table/mapper class 
+        _Transaction_History maps rows to a sql table named 
+        "transaction_history" under a sqlalchemy.orm.sessionmaker setting. 
 
-    _Transaction_History will map rows to a sql table named 
-    "transaction_history" under a sqlalchemy.orm.sessionmaker setting. 
-    The _Transaction_History.__init__() takes the following parameters.
-
-    Parameters:
-    --------------------------------------------------
-    datetime (datetme.datetime): datetime of the transaction
-    ticker (str): stock ticker
-    position_type (float): -1 or 1 indicating a short or long position_type
-                           respectively
-    action (float): -1 or 1 indicating a purchase or a sell
-    no_shares (float): number of shares in the transaction
-    at_price (float): price per share of the transaction
-
-    Example Usage:
+    Example Usage
     --------------------------------------------------
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy.orm import declarative_base as Base
     
     base = Base()
-    transaction_history = Transaction_History(base)
+    _Transaction_History = Transaction_History(base)
 
     engine = create_engine(...)
 
@@ -149,7 +167,7 @@ def TransactionHistory(base):
 
     session = sessionmaker(bind=engine)()
 
-    entry = transaction_history(
+    entry = _Transaction_History(
         datetime, ticker, position_type, action, no_shares, at_price
     )
 
@@ -157,6 +175,7 @@ def TransactionHistory(base):
     session.commit()
     session.close()
     """
+
 
     class _TransactionHistory(base):
         # table name for User model
@@ -190,6 +209,30 @@ def TransactionHistory(base):
             no_shares,
             at_price
         ):
+            """
+            Parameters
+            --------------------------------------------------
+            datetime : datetime.datetime
+                The datetime of the transaction.
+            ticker : str
+                stock ticker
+            position_type : float 
+                Indication of whether the transaction is a short or long. 1.0
+                refers to a long position and -1.0 refers to a short position.
+            action : float
+                Indication of whether the transaction refers to a sell or a 
+                purchase. 1.0 indicates a purchase and -1.0 indicates a sell.
+            no_shares : float 
+                Amount of shares either bought or sold in the transaction.
+            at_price : float 
+                The price per share of the transaction.
+
+            Returns
+            --------------------------------------------------
+            A mapable object that can be sent to a sql table with the use of
+            sqlalchemy.creat_engine and sqlalchemy.orm.sessionmaker. See
+            example usage in help(Transaction_History)
+            """
             self.datetime = datetime 
             self.ticker = ticker 
             self.position_type = position_type 
@@ -202,45 +245,43 @@ def TransactionHistory(base):
 
 def Portfolio(base):
     """
-    Warning:
-    I suggest to not use this function directly. I believe it would be better
-    to pair Transaction_History with a trigger that is connected to the
-    "portfolio" table. This function should usually be used to just create
-    the "portfolio" tables.
+    Suggestion
+    --------------------------------------------------
+    This function should predominatly used to only create the portfolio table
+    and it should be used in tandom with Transaction_History with the use of
+    a SQL trigger. A Trigger should be applied to take the
+    transaction_history rows and calculate the performace of the portfolio 
+    ranther than using this function and its underlying _Portfolio(base)
+    class directly to update the portfolio table.
 
     This function takes a SQLAlchemy declarative_base and returns a SQLAlchemy 
     table/mapper.
+    The mapper will map information about a investorys portfolio to a table
+    named "portfolio".
+    The mapper contains of an underlying sqlalchemy
+    metadata object that can be combined with an engine to create the table
+    if it does not exist. See example usage below.
     
-    Parameters:
-    base (sqlalchemy.orm.declarative_base)
+    Parameters
     --------------------------------------------------
+    base : sqlalchemy.orm.declarative_base
+        A declarative_base that will be inheirited by the underlying class
+       
 
-    Returns:
-    _Portfolio (SQLAlchemy table/mapper class). 
+    Returns
     --------------------------------------------------
+    _Porfolio(base) : SQLAlchemy table/mapper class 
+        _Portfolio maps rows to a sql table named "portfolio" under a 
+        sqlalchemy.orm.sessionmaker setting. 
 
-    _Portfolio will map rows to a sql table named 
-    "portfolio" under a sqlalchemy.orm.sessionmaker setting. 
-    The _Portfolio.__init__() takes the following parameters.
-
-    Parameters:
-    --------------------------------------------------
-    datetime (datetme.datetime): datetime of the transaction
-    ticker (str): stock ticker
-    position_type (float): -1 or 1 indicating a short or long position_type
-                           respectively
-    action (float): -1 or 1 indicating a purchase or a sell
-    no_shares (float): number of shares in the transaction
-    at_price (float): price per share of the transaction
-
-    Example Usage:
+    Example Usage
     --------------------------------------------------
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker
     from sqlalchemy.orm import declarative_base as Base
     
     base = Base()
-    transaction_history = Transaction_History(base)
+    _Transaction_History = Transaction_History(base)
 
     engine = create_engine(...)
 
@@ -250,7 +291,7 @@ def Portfolio(base):
 
     session = sessionmaker(bind=engine)()
 
-    entry = transaction_history(
+    entry = _Transaction_History(
         datetime, ticker, position_type, action, no_shares, at_price
     )
 
@@ -258,7 +299,6 @@ def Portfolio(base):
     session.commit()
     session.close()
     """
-
     class _Portfolio(base):
         # table name for User model
         __tablename__ = "portfolio"
@@ -307,25 +347,67 @@ def Portfolio(base):
 
 class Create:
     """
-    Warning:
-    All of the features of this class are only tested with MySQL syntax. The
-    trigger used in the classes initialize method will need to be editted to
-    satisfy the syntax of other SQL syntaxes such as sqlite, postgreSQL, etc.
-    The classes initialize method should work on databases other than MySQL
-    if the user sets with_trigger=False or writes his or her own trigger. If 
-    a with_trigger=False then the "portfolio" table created by initialize will 
-    not be populated.
+    Warning
+    --------------------------------------------------
+    The default settings of the initialize method of this class requires a 
+    MySQL server. The default trigger uses MySQL syntax and will not work with
+    other SQL servers. However the user may use his or her own trigger if they
+    prefer to use another SQL server such as Postgre, sqlite etc.
 
+    This class will be used to create the database, tables and populate the
+    tables with real stock data that will be scrapped from yahoo using the 
+    yfinance library. The class will also create some fake transactions for an 
+    investory and store these transactions in a table named
+    "transaction_history". The performance of these transactions will 
+    automatically be calculated apon each insertioin of a new transaction by
+    the use of a trigger. The performance of the portfolio will be tracked in 
+    the "portfolio" table.
 
-    The Create class will be used to create the database, create the tables
-    and initiallize the tables with some data.
+    Parameters
+    --------------------------------------------------
+    engine : sqlalchemy engine
+        The engine connecting sqlalchemy to the database.
+    base : sqlalchemy.orm.declarative_base, default _base = declarative_base()
+        A default is set to a declarative_base().
+    OHLCV : default OHLCV(base)
+    TransactionHistory : default TransactionHistory(base)
+    Portfolio : default Portfolio(base)
 
-    parameters:
-    engine (SQLAlchemy engine): A sqlalchemy engine 
-    base (sqlalchemy.orm.declarative_base): A sqlalchemy declarative_base 
-    OHLCV (OHLCV(base)):
-    Transaction_History (Transaction_History(base)):
-    Portfolio (Portfolio(base)):
+    Example Usage
+    --------------------------------------------------
+    import sqlalchemy as db
+    from sqlalchemy.orm import declarative_base as Base
+    import pandas as pd
+
+    dialect="mysql",
+    driver="pymysql",
+    username="root",
+    password="password",
+    host="127.0.0.1",
+    port="3306",
+    db="stock_returns",
+    unix_socket="/tmp/mysql.sock"
+    
+    engine_text = f"{dialect}+{driver}"
+    engine_text += f"://{username}:{password}"
+    engine_text += f"@{host}:{port}/{db}?unix_socket={unix_socket}"
+    
+    engine = db.create_engine(
+        engine_text
+    )
+    
+    base = Base()
+    database = Create(engine=engine, base=base)
+    
+    database.initialize()
+
+    # query from the database into a pandas dataframe
+
+    query = "select * from transaction_history"
+    trans_hist = pd.read_sql(query, engine)
+    
+    query = "select * from portfolio"
+    portfolio = pd.read_sql(query, engine)
     """
     def __init__(
         self,
@@ -362,26 +444,42 @@ class Create:
         This function will initialize the database, create the tables and then
         populate the tables with data.
 
-        parameters:
+        Parameters
         --------------------------------------------------
-        with_entries (boolean): autopopulate the ohlcv table with the tickers
-            listed in the ticker list. scraps data using
-            yfinance.
-        tickers (list): list of tickers
-        start (datetime): start time for the stock prices
-        end (datetime): end time for the stock prices
-        time_step (str): time step for the stock data. yfinance has limitations
-            on this.
-        with_trigger (boolean): If true, then the trigger will be set to auto
-            update the portfolio with the transaction_history 
-        trigger_path (path to custom trigger): defaults to a mysql trigger.
-            needs to be updated if using a different sql server.
-        with_investments (boolean): Will generate investments and auto update
-            the porfolio.
-        drop_db_if_exists (boolean): Will drop the database and recreate it
-            if already exists.
+        with_entries : boolean default True
+            Autopopulate the ohlcv table with the tickers listed in the 
+            ticker list. Scraps data using yfinance.
+        tickers : list, Default ['SPY', 'AMZN', 'NVDA']
+            list of tickers
+        start : datetime, Default dt.datetime.now().replace(
+                    hour=4-3, minute=0, second=0, microsecond=0
+                ) - dt.timedelta(days=29),
+            Start time for the stock prices
+        end : datetime, Default dt.datetime.now().replace(
+                    hour=4-3, minute=0, second=0, microsecond=0
+                ),
+            End time for the stock prices. This also assumes the user is in a 
+            PST timezone.
+        time_step : str, Default '1m'
+            Time step for the stock data. yfinance has limitations on this.
+        with_trigger : boolean, Default True
+            If true, then the trigger will be set to auto update the 
+            portfolio with the transaction_history 
+        trigger_path : str Default './stock_returns/trigger.sql'
+            Defaults to a mysql trigger and needs to be updated if using a 
+            different sql server.
+        with_investments : boolean, Default True
+            Will generate investments and auto update the porfolio.
+        drop_db_if_exists : boolean, Default True
+            Will drop the database and recreate it if already exists.
 
         returns:
+            The function will create a database with name specified in the 
+            engine which is inputed by the user. It will populate the database
+            with three tabled named "ohlcv", "transaction_history", and 
+            "portfolio"."transaction_history" will be linked to "portfolio" 
+            through a trigger and all transactions will update the portfolio
+            automatically.
         """
 
         if self._initialized:
@@ -544,7 +642,5 @@ class Create:
             session.close()
 
         return None
-
-
 
 
