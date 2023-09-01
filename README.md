@@ -17,6 +17,7 @@ database generator.
 
 ## Current database generators
 1. parents_and_children
+2. stock_returns
 
 In each of the subdirectories, there will be a `create.py` file that contains
 a `Create` class. This class will be used to generate the database. More 
