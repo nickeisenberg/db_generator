@@ -14,7 +14,53 @@ _fk = faker.Faker()
 
 _base = Base()
 
+
 def Mailing(base):
+    """
+    This function takes a SQLAlchemy declarative_base and returns a SQLAlchemy 
+    table/mapper. The mapper will take a persons name and address and map it 
+    to a row in a table titled "mailing". The mapper contains 
+    an underlying sqlalchemy metadata object that can be combined with 
+    an engine to create the table if it does not exist. 
+    See example usage below.
+    
+    Parameters
+    --------------------------------------------------
+    base : sqlalchemy.orm.declarative_base
+        A declarative_base that will be inheirited by the underlying class
+       
+
+    Returns
+    --------------------------------------------------
+    _Mailing(base) : SQLAlchemy table/mapper class 
+        _Mailing maps rows to a sql table names "mailing" under a 
+        sqlalchemy.orm.sessionmaker setting. 
+
+    Example Usage
+    --------------------------------------------------
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.orm import declarative_base as Base
+    
+    base = Base()
+    _Mailing = Mailing(base)
+
+    engine = create_engine(...)
+
+    if not database_exists(engine.url):
+        create_database(engine.url) 
+    base.metadata.create_all(bind=engine)
+
+    session = sessionmaker(bind=engine)()
+
+    entry = _Mailing(
+        first_name, last_name, address, city, state, zip
+    )
+
+    session.add(entry)
+    session.commit()
+    session.close()
+    """
 
     class _Mailing(base):
         # table name for User model
@@ -38,6 +84,28 @@ def Mailing(base):
             state,
             zip
         ):
+            """
+            Parameters
+            --------------------------------------------------
+            first_name : str
+                The first name of the person.
+            last_name : str
+                The last name of the person.
+            address : str
+                The address of the person.
+            city : str
+                The city the person lives in.
+            state : str
+                The state the person lives in.
+            zip : int 
+                The zipcode the person lives in.
+
+            Returns
+            --------------------------------------------------
+            A mapable object that can be sent to a sql table with the use of
+            sqlalchemy.creat_engine and sqlalchemy.orm.sessionmaker. See 
+            example usage in help(Mailing)
+            """
             self.first_name = first_name
             self.last_name = last_name
             self.address = address
@@ -48,6 +116,51 @@ def Mailing(base):
     return _Mailing
 
 def Employment(base):
+    """
+    This function takes a SQLAlchemy declarative_base and returns a SQLAlchemy 
+    table/mapper. The mapper will take a persons employment info and map it 
+    to a row in a table titled "employment". The mapper contains 
+    an underlying sqlalchemy metadata object that can be combined with 
+    an engine to create the table if it does not exist. 
+    See example usage below.
+    
+    Parameters
+    --------------------------------------------------
+    base : sqlalchemy.orm.declarative_base
+        A declarative_base that will be inheirited by the underlying class
+       
+
+    Returns
+    --------------------------------------------------
+    _Employment(base) : SQLAlchemy table/mapper class 
+        _Employment(base) maps rows to a sql table names "mailing" under a 
+        sqlalchemy.orm.sessionmaker setting. 
+
+    Example Usage
+    --------------------------------------------------
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.orm import declarative_base as Base
+    
+    base = Base()
+    _Employment = Employment(base)
+
+    engine = create_engine(...)
+
+    if not database_exists(engine.url):
+        create_database(engine.url) 
+    base.metadata.create_all(bind=engine)
+
+    session = sessionmaker(bind=engine)()
+
+    entry = _Employment(
+        job, salary, start_date
+    )
+
+    session.add(entry)
+    session.commit()
+    session.close()
+    """
 
     class _Employment(base):
         # table name for User model
@@ -58,17 +171,74 @@ def Employment(base):
         job = db.Column(db.String(50))
         salary = db.Column(db.Integer())
         start_date = db.Column(db.String(10))
-        # work_duration= db.Column(db.Float(4))
      
-        def __init__(self, salary, job, start_date):  #, work_duration):
+        def __init__(self, salary, job, start_date):
+            """
+            Parameters
+            --------------------------------------------------
+            salary : str
+            job : str
+            start_date : str
+
+            Returns
+            --------------------------------------------------
+            A mapable object that can be sent to a sql table with the use of
+            sqlalchemy.creat_engine and sqlalchemy.orm.sessionmaker. See 
+            example usage in help(Employment)
+            """
             self.salary = salary
             self.job = job
             self.start_date = start_date
-            # self.work_duration = work_duration
 
     return _Employment
 
 def Finances(base):
+    """
+    This function takes a SQLAlchemy declarative_base and returns a SQLAlchemy 
+    table/mapper. The mapper will take a persons financial info and map it 
+    to a row in a table titled "finances". The mapper contains 
+    an underlying sqlalchemy metadata object that can be combined with 
+    an engine to create the table if it does not exist. 
+    See example usage below.
+    
+    Parameters
+    --------------------------------------------------
+    base : sqlalchemy.orm.declarative_base
+        A declarative_base that will be inheirited by the underlying class
+       
+
+    Returns
+    --------------------------------------------------
+    _Finances(base) : SQLAlchemy table/mapper class 
+        _Finances(base) maps rows to a sql table names "finances" under a 
+        sqlalchemy.orm.sessionmaker setting. 
+
+    Example Usage
+    --------------------------------------------------
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.orm import declarative_base as Base
+    
+    base = Base()
+    _Finances = Finances(base)
+
+    engine = create_engine(...)
+
+    if not database_exists(engine.url):
+        create_database(engine.url) 
+    base.metadata.create_all(bind=engine)
+
+    session = sessionmaker(bind=engine)()
+
+    entry = _Employment(
+        bank_act,
+        savings
+    )
+
+    session.add(entry)
+    session.commit()
+    session.close()
+    """
 
     class _Finances(base):
         # table name for User model
@@ -80,6 +250,18 @@ def Finances(base):
         savings = db.Column(db.Integer())
      
         def __init__(self, bank_act, savings):
+            """
+            Parameters
+            --------------------------------------------------
+            bank_act : int
+            savings : int
+
+            Returns
+            --------------------------------------------------
+            A mapable object that can be sent to a sql table with the use of
+            sqlalchemy.creat_engine and sqlalchemy.orm.sessionmaker. See 
+            example usage in help(Finances)
+            """
             self.bank_act = bank_act
             self.savings = savings
 
@@ -87,6 +269,57 @@ def Finances(base):
 
 
 def Children(base):
+    """
+    This function takes a SQLAlchemy declarative_base and returns a SQLAlchemy 
+    table/mapper. The mapper will map info about a child 
+    to a row in a table titled "children". The mapper contains 
+    an underlying sqlalchemy metadata object that can be combined with 
+    an engine to create the table if it does not exist. 
+    See example usage below.
+    
+    Parameters
+    --------------------------------------------------
+    base : sqlalchemy.orm.declarative_base
+        A declarative_base that will be inheirited by the underlying class
+       
+
+    Returns
+    --------------------------------------------------
+    _Children(base) : SQLAlchemy table/mapper class 
+        _Children(base) maps rows to a sql table names "children" under a 
+        sqlalchemy.orm.sessionmaker setting. 
+
+    Example Usage
+    --------------------------------------------------
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.orm import declarative_base as Base
+    
+    base = Base()
+    _Children = Children(base)
+
+    engine = create_engine(...)
+
+    if not database_exists(engine.url):
+        create_database(engine.url) 
+    base.metadata.create_all(bind=engine)
+
+    session = sessionmaker(bind=engine)()
+
+    entry = _Children(
+        parent1_id, 
+        parent2_id, 
+        first_name, 
+        last_name, 
+        same_residence, 
+        is_student, 
+        is_employed
+    )
+
+    session.add(entry)
+    session.commit()
+    session.close()
+    """
 
     class _Children(base):
     
@@ -111,6 +344,33 @@ def Children(base):
             is_student,
             is_employed,
         ):
+            """
+            Parameters
+            --------------------------------------------------
+            parent1_id : int
+                The key of the first parent. Assumes that a tables is already
+                created that has the name of this parent in it.
+            parent2_id : int
+                The key of the second parent. Assumes that a tables is already
+                created that has the name of this parent in it.
+            first_name : str
+                The first name of the child.
+            last_name : str
+                The last name of the child.
+            same_residence : boolean
+                A boolean indicating if the child lives at home with his or her
+                parents.
+            is_student : boolean
+                A boolean indicating if the child is a student.
+            is_employed : boolean
+                A boolean indicating if the child is employed.
+
+            Returns
+            --------------------------------------------------
+            A mapable object that can be sent to a sql table with the use of
+            sqlalchemy.creat_engine and sqlalchemy.orm.sessionmaker. See 
+            example usage in help(Finances)
+            """
             self.parent1_id = parent1_id 
             self.parent2_id = parent2_id 
             self.first_name = first_name
@@ -123,25 +383,119 @@ def Children(base):
 
 
 class SalSavStartGen:
+    """
+    This class attempts to produce a relatively believable salary, savings and 
+    startdate for a person based on the average salary of their job.
+
+    The startdate is randomly selected inbetween Jan 1, 2000 and Aug 15, 2023.
+    
+    The work duration is calculated as the amount of time one has spent 
+    at the job between the startdate and Aug 15, 2023.
+    
+    If the avg_sal > 0 then the generated salary is based off of the sum 
+    of two componets 
+        1) max(normal(avg_sal, avg_sal / 4), avg_sal / 10)
+        2) max(np.random.gamma(.1, avg_sal) - np.random.gamma(.1, avg_sal), 0)
+    (1) is basically the average base salary and is bounded below by a tenth
+    of the average salary. (2) basically is random noise that is prodominately
+    zero, however can occasionally become very large, which then introduces an 
+    outlier salary for those who happend to be at the very top of their
+    field.
+
+    If the avg_sal > 0 then the savings is based off of the 
+    work duration and salary and is generated to be 
+        np.random.normal(
+            salary * work_duration / 4,
+            salary / 8,
+        )
+    If this value is negative then that is taken to mean that the person is in 
+    debt.
+    If the avg_sal = 0, ie the person is unemployed, then this persons savings
+    is simulated to be
+        np.random.gamma(.5, 50) - np.random.gamma(.1, 50)
+    There is no particular reason that I chose this for the savings of a 
+    person with no salary other than the fact that I thought the histogram 
+    after simulated 1000 samples looked nice.
+
+
+    Parameter
+    --------------------------------------------------
+    avg_sal : int
+        The average salary for the position
+
+    Attributes
+    --------------------------------------------------
+    salary : float
+        The generated salary given the average salary 
+    startdate : datetime
+        The generated startdate randomly selected between Jan 1, 2000 and 
+        Aug 15, 2023.
+    savings : float
+        The generated savings given the average salary 
+
+    View the Distributions
+    --------------------------------------------------
+    import matplotlib.pyplot as plt
+    import numpy as np
+    from faker import Faker
+    import datetime as dt
+    from copy import deepcopy
+    
+    _fk = Faker()
+
+    # Non-zero salary
+    avg_sal=100
+    sav = np.array([])
+    sal = np.array([])
+    for i in range(10000):
+        salsav = SalSavStartGen(avg_sal)
+        sav = np.append(sav, salsav.savings)
+        sal = np.append(sal, salsav.salary)
+    
+    sal.mean()
+    sal.max()
+    sav.mean()
+    sav.max()
+    
+    fig, ax = plt.subplots(1, 2)
+    ax[0].hist(sav, bins=100)
+    ax[1].hist(sal, bins=100)
+    plt.show()
+    
+    # Zero salary
+    
+    avg_sal=0
+    sav = np.array([])
+    for i in range(10000):
+        salsav = SalSavStartGen(avg_sal)
+        sav = np.append(sav, salsav.savings)
+    
+    sav.mean()
+    sav.max()
+    
+    plt.hist(sav, bins=100)
+    plt.show()
+    """
 
     def __init__(self, avg):
-        self.salary = self.salary_generator(avg)
-        self.startdate, self.work_duration = self.startdate_generator()
-        self.savings = self.savings_generator()
-    
+        self.salary = self._salary_generator(avg)
+        self.startdate, self.work_duration = self._startdate_generator()
+        self.savings = self._savings_generator()
+
     @staticmethod
-    def salary_generator(avg_sal):
+    def _salary_generator(avg_sal):
         if avg_sal == 0:
             return 0
         else:
-            sal_noise = max(
-                np.random.gamma(.1, avg_sal) - np.random.gamma(.1, avg_sal),
-                -1. * avg_sal / 2
-            )
-            return avg_sal + sal_noise
+            sal_noise_r = np.random.gamma(.1, avg_sal) - np.random.gamma(.1, avg_sal)
+            sal_noise_l = np.abs(np.random.normal(avg_sal, avg_sal / 4))
+            if sal_noise_r > 0:
+                return sal_noise_r + sal_noise_l
+            else:
+                return max(sal_noise_l, avg_sal / 10)
     
      
-    def savings_generator(self):
+    def _savings_generator(self):
         if self.salary == 0:
             return np.random.gamma(.5, 50) - np.random.gamma(.1, 50)
         else:
@@ -152,7 +506,7 @@ class SalSavStartGen:
             return saving
     
     @staticmethod
-    def startdate_generator(
+    def _startdate_generator(
         start=dt.datetime(2000, 1, 1),
         end=dt.datetime(2023, 8, 15),
     ):
