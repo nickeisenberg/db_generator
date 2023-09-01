@@ -373,6 +373,12 @@ class Create:
     TransactionHistory : default TransactionHistory(base)
     Portfolio : default Portfolio(base)
 
+    Methods 
+    --------------------------------------------------
+    initialize
+        Initializes the database and data and populates with stock data 
+        scraped from yfinance as well as some fake transaction data.
+
     Example Usage
     --------------------------------------------------
     import sqlalchemy as db

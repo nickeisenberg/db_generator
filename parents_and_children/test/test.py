@@ -25,7 +25,7 @@ database.initialize(
 #--------------------------------------------------
 # run some queries
 
-query = 'select * from mailing;'
+query = 'select * from children where same_residence = 1'
 df = pd.read_sql(query, con=engine)
-print(df)
 
+df.head()

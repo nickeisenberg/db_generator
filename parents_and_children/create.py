@@ -539,6 +539,68 @@ class Create:
         self.Children = Children(base)
         self._initialized = False
 
+    """
+    This class will be used to create the database, tables and populate the
+    tables with real stock data that will be scrapped from yahoo using the 
+    yfinance library. The class will also create some fake transactions for an 
+    investory and store these transactions in a table named
+    "transaction_history". The performance of these transactions will 
+    automatically be calculated apon each insertioin of a new transaction by
+    the use of a trigger. The performance of the portfolio will be tracked in 
+    the "portfolio" table.
+
+    Parameters
+    --------------------------------------------------
+    engine : sqlalchemy engine
+        The engine connecting sqlalchemy to the database.
+    base : sqlalchemy.orm.declarative_base, default _base = declarative_base()
+        A default is set to a declarative_base().
+    Mailing : default Mailing(base)
+    Employment : default Employment(base)
+    Finances : default Finances(base)
+    Children : default Children(base)
+
+    Methods
+    --------------------------------------------------
+    initialize
+        Initializes the database and tables as well as populates the tables
+        with fake data.
+
+    Example Usage
+    --------------------------------------------------
+    import sqlalchemy as db
+    from sqlalchemy.orm import declarative_base as Base
+    import pandas as pd
+
+    dialect="mysql",
+    driver="pymysql",
+    username="root",
+    password="password",
+    host="127.0.0.1",
+    port="3306",
+    db="parents_and_children",
+    unix_socket="/tmp/mysql.sock"
+    
+    engine_text = f"{dialect}+{driver}"
+    engine_text += f"://{username}:{password}"
+    engine_text += f"@{host}:{port}/{db}?unix_socket={unix_socket}"
+    
+    engine = db.create_engine(
+        engine_text
+    )
+    
+    base = Base()
+    database = Create(engine=engine, base=base)
+    
+    database.initialize()
+
+    # query from the database into a pandas dataframe
+
+    query = "select * from children where same_residence = True"
+    trans_hist = pd.read_sql(query, engine)
+    
+    """
+
 
     def initialize(
             self,
@@ -546,11 +608,49 @@ class Create:
         include_unemployed=True,
         with_entries=True,
         drop_db_if_exists=True,
-        no_parents=5,
-        no_children=9,
+        no_parents=500,
+        no_children=600,
         faker_seed=0,
         numpy_seed=0
     ):
+        """
+        This function will initialize the database, create the tables and then
+        populate the tables with data.
+
+        Parameters
+        --------------------------------------------------
+        no_jobs : int 1 - len(JOBS), Default len(JOBS)
+            The number of jobs to select for simulating the fake data.
+        include_unemployed : boolean, Default True
+            Inclued "unemployed" as a job type.
+        with_entries : boolean, Default True
+            If  true, then initialize will generate fake data and populate
+            all of the tables.
+        drop_db_if_exists : boolean, Default True
+            If  true, then initialize will drop the database if it exists and 
+            then recreate it.
+        no_parents : int, Default 500
+            The number of generated parents.
+        no_children : int, Default 600
+            The number of generated children. The children may have not have
+            a parent in the "mailing" table.
+        faker_seed : int, Default 0
+            The faker.Faker seed to allow for reproducability
+        numpy_seed : int, Default 0
+            The numpy.random seed to allow for reproducability
+
+        returns:
+            The function will create a database with name specified in the 
+            engine which is inputed by the user. It will populate the database
+            with four tables named "mailing", "children", "finances" and 
+            "employment". The "mailing" table is essentially the list of all 
+            possible parents to the children in the "children" table. The 
+            "employment" table has the parents job with salary and the
+            "finances" table has the parents savings amount. The salary,
+            savings and start date for the job is generated using 
+            the SalSavStartGen class, which generates believable salaries 
+            given the average salary of the job that the person has.
+        """
 
         np.random.seed(numpy_seed) 
         faker.Faker.seed(faker_seed)
