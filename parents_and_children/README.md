@@ -1,7 +1,7 @@
-## Tables
+# Tables
 The following tables will be generated after following the instructions below.
 
-### mailing
+## mailing
 `show columns from mailing;` 
 
 | Field      | Type         | Null | Key | Default | Extra          |
@@ -14,7 +14,7 @@ The following tables will be generated after following the instructions below.
 | state      | varchar(128) | YES  |     | NULL    |                |
 | zip        | int          | YES  |     | NULL    |                |
 
-### employment
+## employment
 `show columns from employment;` 
 
 | Field      | Type        | Null | Key | Default | Extra          |
@@ -24,7 +24,7 @@ The following tables will be generated after following the instructions below.
 | salery     | int         | YES  |     | NULL    |                |
 | start_date | varchar(10) | YES  |     | NULL    |                |
 
-### finances
+## finances
 `show columns from finances;` 
 
 | Field     | Type        | Null | Key | Default | Extra          |
@@ -33,7 +33,7 @@ The following tables will be generated after following the instructions below.
 | bank_act  | varchar(20) | YES  |     | NULL    |                |
 | savings   | int         | YES  |     | NULL    |                |
 
-### children 
+## children 
 `show columns from children;` 
 
 | Field          | Type        | Null | Key | Default | Extra          |
@@ -48,61 +48,43 @@ The following tables will be generated after following the instructions below.
 | is_employed    | tinyint(1)  | YES  |     | NULL    |                |
 
 
-## How to use
-* First clone or fork the repo onto your machine.
-* To create the database, you first need to create an engine.
-See [this link](https://docs.sqlalchemy.org/en/20/core/engines.html) for
-information on engines. There is also a function in the `utils.py` folder that
-will create the engine for you. This function should work with postgresql, but
-I have only tested it for mysql. If you want to use sqlite as you database,
-the engine simply becomes `sqlalchemy.create_engine('sqlite:///<path_to_db>')`.
-* After creating the engine, open a python script and run the following 
-(the following is for mysql):
+# How to use
+* Make some instructions...
 
 ```python
 import sqlalchemy as db
-from utils import engine_generator
 from parents_and_children.create import Create
 from sqlalchemy.orm import declarative_base as Base
+import pandas as pd
 
-# mysql
-engine = engine_generator(
-    dialect='mysql', 
-    driver='pymysql', 
-    username='root', 
-    host='127.0.0.1',
-    port='3306',
-    db='practice',
-    unix_socket='/tmp/mysql.sock'
+# Create the mysql engine
+dialect="mysql",
+driver="pymysql",
+username="root",
+password="password",
+host="127.0.0.1",
+port="3306",
+db="parents_and_children",
+unix_socket="/tmp/mysql.sock"
+
+engine_text = f"{dialect}+{driver}"
+engine_text += f"://{username}:{password}"
+engine_text += f"@{host}:{port}/{db}?unix_socket={unix_socket}"
+
+engine = db.create_engine(
+    engine_text
 )
-
-# sqlite
-path = "<path_to_where_you_want_you_sqlite.db_file>"
-engine = db.create_engine(f'sqlite:///{path}')
 
 base = Base()
 database = Create(engine=engine, base=base)
-database.initialize(
-        no_jobs=5,  # there are 15 possible jobs
-        include_unemployed=True,  # this will include unemployment
-        with_entries=True,  # populate the database with <no_parents> entries
-        drop_db_if_exists=True,  # will drop and recreate the database if exists
-        no_parents=5,  # number of parents
-        no_children=10,  # number of children randomly assigned to parents
-        faker_seed=0,  # set the faker seed for reproducibility
-        numpy_seed=0  # set the numpy seed for reproducibility
-    )
+
+database.initialize()
+
+# query from the database into a pandas dataframe
+
+query = "select * from children where same_residence = True"
+trans_hist = pd.read_sql(query, engine)
 ```
-
-* The database is now generated. As a simple test, you can run the following:
-```python
-import pandas as pd
-
-pd.read_sql("""select * from employment""", engine)
-```
-
-* Now use any database IDE to run queries. There are also some practice 
-questions listed below.
 
 # A list of questions
 1. Find the average salaries of each of the professions

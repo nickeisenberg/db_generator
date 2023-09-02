@@ -4,6 +4,11 @@ from sqlalchemy.orm import declarative_base as Base
 import pandas as pd
 from utils import engine_generator
 
+# sqlite
+path = "<path_to_where_you_want_you_sqlite.db_file>"
+engine = db.create_engine(f'sqlite:///{path}')
+
+# mysql
 dbname = 'parents_and_children'
 engine = db.create_engine(
     f"mysql+pymysql://root:@127.0.0.1:3306/{dbname}?unix_socket=/tmp/mysql.sock"
