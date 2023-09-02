@@ -53,7 +53,6 @@ The following tables will be generated after following the instructions below.
 
 ```python
 import sqlalchemy as db
-from utils import engine_generator
 from stock_returns.create import Create
 from sqlalchemy.orm import declarative_base as Base
 import pandas as pd
