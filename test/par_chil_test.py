@@ -2,7 +2,6 @@ import sqlalchemy as db
 from parents_and_children.create import Create
 from sqlalchemy.orm import declarative_base as Base
 import pandas as pd
-from utils import engine_generator
 
 # sqlite
 path = "<path_to_where_you_want_you_sqlite.db_file>"
@@ -28,9 +27,9 @@ database.initialize(
     )
 
 #--------------------------------------------------
+
 # run some queries
 
 query = 'select * from children where same_residence = 1'
 df = pd.read_sql(query, con=engine)
-
-df.head()
+print(df.head())
