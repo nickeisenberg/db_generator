@@ -172,7 +172,9 @@ def Employment(base):
         __tablename__ = "employment"
     
         # user columns
-        parent_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+        parent_id = db.Column(
+            db.Integer(), primary_key=True, autoincrement=True
+        )
         job = db.Column(db.String(50))
         salary = db.Column(db.Integer())
         start_date = db.Column(db.String(10))
@@ -252,7 +254,9 @@ def Finances(base):
         __tablename__ = "finances"
     
         # user columns
-        parent_id = db.Column(db.Integer(), primary_key=True, autoincrement=True)
+        parent_id = db.Column(
+            db.Integer(), primary_key=True, autoincrement=True
+        )
         bank_act = db.Column(db.String(20))
         savings = db.Column(db.Integer())
      
@@ -501,7 +505,8 @@ class SalSavStartGen:
         if avg_sal == 0:
             return 0
         else:
-            sal_noise_r = np.random.gamma(.1, avg_sal) - np.random.gamma(.1, avg_sal)
+            sal_noise_r = np.random.gamma(.1, avg_sal)
+            sal_noise_r -= np.random.gamma(.1, avg_sal)
             sal_noise_l = np.abs(np.random.normal(avg_sal, avg_sal / 4))
             if sal_noise_r > 0:
                 return sal_noise_r + sal_noise_l
