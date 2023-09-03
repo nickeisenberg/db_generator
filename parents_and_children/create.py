@@ -89,14 +89,19 @@ def Mailing(base):
             --------------------------------------------------
             first_name : str
                 The first name of the person.
+
             last_name : str
                 The last name of the person.
+
             address : str
                 The address of the person.
+
             city : str
                 The city the person lives in.
+
             state : str
                 The state the person lives in.
+
             zip : int 
                 The zipcode the person lives in.
 
@@ -177,7 +182,9 @@ def Employment(base):
             Parameters
             --------------------------------------------------
             salary : str
+
             job : str
+
             start_date : str
 
             Returns
@@ -254,6 +261,7 @@ def Finances(base):
             Parameters
             --------------------------------------------------
             bank_act : int
+
             savings : int
 
             Returns
@@ -348,20 +356,26 @@ def Children(base):
             Parameters
             --------------------------------------------------
             parent1_id : int
-                The key of the first parent. Assumes that a tables is already
+                The key of the first parent. Assumes that a table is already
                 created that has the name of this parent in it.
+
             parent2_id : int
-                The key of the second parent. Assumes that a tables is already
+                The key of the second parent. Assumes that a table is already
                 created that has the name of this parent in it.
+
             first_name : str
                 The first name of the child.
+
             last_name : str
                 The last name of the child.
+
             same_residence : boolean
                 A boolean indicating if the child lives at home with his or her
                 parents.
+
             is_student : boolean
                 A boolean indicating if the child is a student.
+
             is_employed : boolean
                 A boolean indicating if the child is employed.
 
@@ -553,11 +567,16 @@ class Create:
     --------------------------------------------------
     engine : sqlalchemy engine
         The engine connecting sqlalchemy to the database.
+        
     base : sqlalchemy.orm.declarative_base, default _base = declarative_base()
         A default is set to a declarative_base().
+
     Mailing : default Mailing(base)
+
     Employment : default Employment(base)
+
     Finances : default Finances(base)
+
     Children : default Children(base)
 
     Methods
@@ -621,21 +640,28 @@ class Create:
         --------------------------------------------------
         no_jobs : int 1 - len(JOBS), Default len(JOBS)
             The number of jobs to select for simulating the fake data.
+
         include_unemployed : boolean, Default True
             Inclued "unemployed" as a job type.
+
         with_entries : boolean, Default True
             If  true, then initialize will generate fake data and populate
             all of the tables.
+
         drop_db_if_exists : boolean, Default True
             If  true, then initialize will drop the database if it exists and 
             then recreate it.
+
         no_parents : int, Default 500
             The number of generated parents.
+
         no_children : int, Default 600
             The number of generated children. The children may have not have
             a parent in the "mailing" table.
+
         faker_seed : int, Default 0
             The faker.Faker seed to allow for reproducability
+
         numpy_seed : int, Default 0
             The numpy.random seed to allow for reproducability
 

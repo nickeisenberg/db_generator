@@ -96,18 +96,25 @@ def OHLCV(base):
             --------------------------------------------------
             datetime : datetime.datetime
                 The datetime from the start of the period for the stock price
+
             ticker : str
                 stock ticker
+
             open : float 
                 open price of the period
+
             high : float
                 high price of the period
+
             low : float 
                 low price of the period
+
             close : float 
                 close price of the period
+
             volume : float
                 volume price of the period
+
             timestamp : float 
                 unix timestamp of the datetime
 
@@ -214,16 +221,21 @@ def TransactionHistory(base):
             --------------------------------------------------
             datetime : datetime.datetime
                 The datetime of the transaction.
+
             ticker : str
                 stock ticker
+
             position_type : float 
                 Indication of whether the transaction is a short or long. 1.0
                 refers to a long position and -1.0 refers to a short position.
+
             action : float
                 Indication of whether the transaction refers to a sell or a 
                 purchase. 1.0 indicates a purchase and -1.0 indicates a sell.
+
             no_shares : float 
                 Amount of shares either bought or sold in the transaction.
+
             at_price : float 
                 The price per share of the transaction.
 
@@ -335,7 +347,7 @@ def Portfolio(base):
         ):
             """
             These values will be auto-calculated by 
-            './stock_returns/trigger.sql'. 
+            './stock_returns/trigger.sql'.
 
             Parameters
             --------------------------------------------------
@@ -529,27 +541,35 @@ class Create:
         with_entries : boolean default True
             Autopopulate the ohlcv table with the tickers listed in the 
             ticker list. Scraps data using yfinance.
+
         tickers : list, Default ['SPY', 'AMZN', 'NVDA']
             list of tickers
+
         start : datetime, Default dt.datetime.now().replace(
                     hour=4-3, minute=0, second=0, microsecond=0
                 ) - dt.timedelta(days=29),
             Start time for the stock prices
+
         end : datetime, Default dt.datetime.now().replace(
                     hour=4-3, minute=0, second=0, microsecond=0
                 ),
             End time for the stock prices. This also assumes the user is in a 
             PST timezone.
+
         time_step : str, Default '1m'
             Time step for the stock data. yfinance has limitations on this.
+
         with_trigger : boolean, Default True
             If true, then the trigger will be set to auto update the 
             portfolio with the transaction_history 
+
         trigger_path : str Default './stock_returns/trigger.sql'
             Defaults to a mysql trigger and needs to be updated if using a 
             different sql server.
+
         with_investments : boolean, Default True
             Will generate investments and auto update the porfolio.
+
         drop_db_if_exists : boolean, Default True
             Will drop the database and recreate it if already exists.
 
