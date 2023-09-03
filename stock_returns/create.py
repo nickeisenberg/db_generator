@@ -334,36 +334,71 @@ def Portfolio(base):
             gain
         ):
             """
+            These values will be auto-calculated by 
+            './stock_returns/trigger.sql'. 
+
             Parameters
             --------------------------------------------------
             ticker : str
                 The stock's ticker.
+
             position_type : float
                 Indication whether the position is a short or a long.
                 1.0 indicated a long and -1.0 indicates a short.
+
             position : float
                 The amount of shares either long or short.
+
             last_price : float
                 The last known price of the stock of the position.
+
             cost_basis : float
-                The average price per share of the position.
+                *   For a long postition, this is the average price per share 
+                    of the position and this is only affected by new purchases.
+                    For a purchase of size no_shares at a price of at_price, 
+                    the cost basis is calculated to be 
+                        cost_basis = (
+                            ((position - no_shares) * cost_basis) 
+                            + no_shares * at_price
+                        ) / position,
+                    where position = position + no_shares is the size of the 
+                    position after the purchase of no_shares new shares.
+                *   For a short postition, this represents the average price 
+                    per share that the investory needs to pay back and this 
+                    is only affected by borrowing more of the stock.
+                    For a short of size no_shares at a price of at_price, 
+                    the cost basis is calculated to be 
+                        cost_basis = (
+                            (-1.0 * (position + no_shares) * cost_basis) 
+                            + (no_shares * at_price)
+                        ) / position * -1.0,
+                    where position = position - no_shares is the size of the 
+                    position after the short of no_share additional shares.
+
             total_invested : float 
-                For a long position, this is the total amount of money that
-                has been invested into the stock.
-                For a short position, this is value is negative and is 
-                the total amount of money that has been borrowed.
+                *   For a long position, this is the total amount of money that
+                    has been invested into the stock.
+                *   For a short position, this is the total amount of money 
+                    that has gone into repaying the total amount borrowed.
+
             current_value : float 
-                last_price * position. For a short position, this value is 
-                negative and is the current amount that is still borrowd. 
+                last_price * position. 
+                *   For a long position...
+                *   For a short position...
+
             realized_profit : float 
-                For long position, this is the total amount of money that has
-                been accrued through selling stock. This number being positive
-                does not mean that the invester is up on his investment, it 
-                just means that he or she has sold some of their stock.
-                For a short position, this is...
+                *   For long position, this is the total amount of money that 
+                    has been accrued through selling stock. 
+                    This number being positive does not mean that the 
+                    invester is up on his investment, it just means that 
+                    they have sold some of their stock.
+                *   For a short position, this is...
+
             gain : float 
                 This is the percent gain that the investor has on thier
                 investment.
+                *   For a long position...
+                *   For a short position...
 
             Returns
             --------------------------------------------------
