@@ -281,7 +281,7 @@ def Portfolio(base):
     from sqlalchemy.orm import declarative_base as Base
     
     base = Base()
-    _Transaction_History = Transaction_History(base)
+    _Portfolio = Portfolio(base)
 
     engine = create_engine(...)
 
@@ -291,8 +291,9 @@ def Portfolio(base):
 
     session = sessionmaker(bind=engine)()
 
-    entry = _Transaction_History(
-        datetime, ticker, position_type, action, no_shares, at_price
+    entry = Portfolio(
+        ticker, position_type, position, last_price, cost_basis, 
+        total_invested, current_value, realized_profit, gain 
     )
 
     session.add(entry)
@@ -332,6 +333,44 @@ def Portfolio(base):
             realized_profit,
             gain
         ):
+            """
+            Parameters
+            --------------------------------------------------
+            ticker : str
+                The stock's ticker.
+            position_type : float
+                Indication whether the position is a short or a long.
+                1.0 indicated a long and -1.0 indicates a short.
+            position : float
+                The amount of shares either long or short.
+            last_price : float
+                The last known price of the stock of the position.
+            cost_basis : float
+                The average price per share of the position.
+            total_invested : float 
+                For a long position, this is the total amount of money that
+                has been invested into the stock.
+                For a short position, this is value is negative and is 
+                the total amount of money that has been borrowed.
+            current_value : float 
+                last_price * position. For a short position, this value is 
+                negative and is the current amount that is still borrowd. 
+            realized_profit : float 
+                For long position, this is the total amount of money that has
+                been accrued through selling stock. This number being positive
+                does not mean that the invester is up on his investment, it 
+                just means that he or she has sold some of their stock.
+                For a short position, this is...
+            gain : float 
+                This is the percent gain that the investor has on thier
+                investment.
+
+            Returns
+            --------------------------------------------------
+            A mapable object that can be sent to a sql table with the use of
+            sqlalchemy.creat_engine and sqlalchemy.orm.sessionmaker. See
+            example usage in help(Portfolio).
+            """
             self.ticker = ticker
             self.position_type = position_type 
             self.position = position 
