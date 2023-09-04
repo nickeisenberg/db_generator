@@ -7,7 +7,7 @@ import numpy as np
 import datetime as dt
 import yfinance as yf
 import pandas as pd
-from stock_returns.utils import convert_sql_to_string
+from stock_returns.utils import convert_sql_to_string, transaction_chain
 
 
 _base = Base()
@@ -189,7 +189,10 @@ def TransactionHistory(base):
         __tablename__ = "transaction_history"
     
         # user columns
-        id = db.Column(
+        user_id = db.Column(
+            db.Integer(), primary_key=True, autoincrement=False
+        )
+        trans_id = db.Column(
             db.Integer(), primary_key=True, autoincrement=True
         )
         datetime = db.Column(
@@ -209,6 +212,7 @@ def TransactionHistory(base):
      
         def __init__(
             self,
+            user_id,
             datetime,
             ticker,
             position_type,
@@ -219,6 +223,9 @@ def TransactionHistory(base):
             """
             Parameters
             --------------------------------------------------
+            user_id : int
+                ID of the investor
+
             datetime : datetime.datetime
                 The datetime of the transaction.
 
@@ -245,6 +252,7 @@ def TransactionHistory(base):
             sqlalchemy.creat_engine and sqlalchemy.orm.sessionmaker. See
             example usage in help(Transaction_History)
             """
+            self.user_id = user_id 
             self.datetime = datetime 
             self.ticker = ticker 
             self.position_type = position_type 
@@ -317,6 +325,9 @@ def Portfolio(base):
         __tablename__ = "portfolio"
     
         # user columns
+        user_id = db.Column(
+            db.Integer, primary_key=True, autoincrement=False
+        )
         ticker = db.Column(
             db.String(6), primary_key=True, autoincrement=False
         )
@@ -335,6 +346,7 @@ def Portfolio(base):
      
         def __init__(
             self,
+            user_id,
             ticker,
             position_type,
             position,
@@ -351,6 +363,9 @@ def Portfolio(base):
 
             Parameters
             --------------------------------------------------
+            user_id : int 
+                ID of the investor.
+
             ticker : str
                 The stock's ticker.
 
@@ -418,6 +433,7 @@ def Portfolio(base):
             sqlalchemy.creat_engine and sqlalchemy.orm.sessionmaker. See
             example usage in help(Portfolio).
             """
+            self.user_id = user_id 
             self.ticker = ticker
             self.position_type = position_type 
             self.position = position 
@@ -519,6 +535,7 @@ class Create:
     def initialize(
         self,
         with_entries=True,
+        no_investors = 5,
         tickers = ['SPY', 'NVDA', 'AMZN'],
         start = dt.datetime.now().replace(
             hour=4-3, minute=0, second=0, microsecond=0
@@ -541,6 +558,10 @@ class Create:
         with_entries : boolean default True
             Autopopulate the ohlcv table with the tickers listed in the 
             ticker list. Scraps data using yfinance.
+
+        no_investors : int, Default 5
+            The number of investors for which transaction and portfolio data 
+            is generated for.
 
         tickers : list, Default ['SPY', 'AMZN', 'NVDA']
             list of tickers
@@ -645,6 +666,9 @@ class Create:
                     query
                 ).T.reset_index()
                 
+                for col in ['Open', 'High', 'Low', 'Close', 'Volume']:
+                    sub_df[col] = sub_df[col].astype(float).interpolate()
+                
                 sub_df['timestamp'] = [
                     dt.datetime.strptime(
                         npdt, '%Y-%m-%d %H:%M:%S'
@@ -675,68 +699,62 @@ class Create:
             )['datetime'].values.astype(str)
 
             long_invs = {
-                "SPY": [
-                    (dates[int(dates.size * 0)], 1, 20), 
-                    (dates[int(dates.size * .2)], 1, 10), 
-                    (dates[int(dates.size * .25)], -1, 15), 
-                    (dates[int(dates.size * .7)], -1, 3), 
-                    (dates[int(dates.size * .8)], 1, 10)
-                ],
-                "AMZN": [
-                    (dates[int(dates.size * 0)], 1, 32), 
-                    (dates[int(dates.size * .5)], 1, 100), 
-                    (dates[int(dates.size * .9)], -1, 100), 
-                ],
-                "NVDA": [
-                    (dates[int(dates.size * .3)], 1, 10), 
-                    (dates[int(dates.size * .8)], 1, 50), 
-                    (dates[int(dates.size * .9)], -1, 40), 
-                ],
+                t: transaction_chain(1.0, 5, dates) for t in tickers
             }
 
             short_invs = {
-                "AMZN": [
-                    (dates[int(dates.size * .21)], -1, 20), 
-                    (dates[int(dates.size * .4)], 1, 10), 
-                    (dates[int(dates.size * .8)], -1, 100) 
-                ],
-                "NVDA": [
-                    (dates[int(dates.size * .9)], -1, 10), 
-                    (dates[int(dates.size * .98)], 1, 4) 
-                ],
+                t: transaction_chain(-1.0, 5, dates) for t in tickers
             }
             
             session  = sessionmaker(bind=self.engine)()
+            
+            for user_id in range(1, no_investors + 1):
+                for ticker in long_invs.keys():
+                    for trans in long_invs[ticker]:
+                        datetime, action, no_shares = trans
+                        l = datetime[:10]
+                        r = datetime[11: -10]
+                        query = f"select open from ohlcv "
+                        query += f"where datetime = '{l + ' ' + r}' "
+                        query += f"and ticker = '{ticker}'"
+                        open = pd.read_sql(
+                            query, self.engine
+                        )['open'].values[0]
 
-            for ticker in long_invs.keys():
-                for trans in long_invs[ticker]:
-                    datetime, action, no_shares = trans
-                    l = datetime[:10]
-                    r = datetime[11: -10]
-                    query = f"select open from ohlcv "
-                    query += f"where datetime = '{l + ' ' + r}' "
-                    query += f"and ticker = '{ticker}'"
-                    open = pd.read_sql(query, self.engine)['open'].values[0]
+                        transaction = self.TransactionHistory(
+                            user_id, 
+                            datetime, 
+                            ticker, 
+                            1,
+                            action, 
+                            no_shares, 
+                            open
+                        )
+                        session.add(transaction)
 
-                    transaction = self.TransactionHistory(
-                        datetime, ticker, 1, action, no_shares, open
-                    )
-                    session.add(transaction)
+            for user_id in range(1, no_investors + 1):
+                for ticker in short_invs.keys():
+                    for trans in short_invs[ticker]:
+                        datetime, action, no_shares = trans 
+                        l = datetime[:10]
+                        r = datetime[11: -10]
+                        query = f"select open from ohlcv "
+                        query += f"where datetime = '{l + ' ' + r}' "
+                        query += f"and ticker = '{ticker}'"
+                        open = pd.read_sql(
+                            query, self.engine
+                        )['open'].values[0]
 
-            for ticker in short_invs.keys():
-                for trans in short_invs[ticker]:
-                    datetime, action, no_shares = trans 
-                    l = datetime[:10]
-                    r = datetime[11: -10]
-                    query = f"select open from ohlcv "
-                    query += f"where datetime = '{l + ' ' + r}' "
-                    query += f"and ticker = '{ticker}'"
-                    open = pd.read_sql(query, self.engine)['open'].values[0]
-
-                    transaction = self.TransactionHistory(
-                        datetime, ticker, -1, action, no_shares, open
-                    )
-                    session.add(transaction)
+                        transaction = self.TransactionHistory(
+                            user_id, 
+                            datetime, 
+                            ticker, 
+                            -1, 
+                            action, 
+                            no_shares, 
+                            open
+                        )
+                        session.add(transaction)
 
             session.commit()
             session.close()

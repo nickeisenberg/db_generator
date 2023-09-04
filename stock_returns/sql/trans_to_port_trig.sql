@@ -7,6 +7,7 @@ begin
 if (new.position_type > 0 and new.action > 0) then
     INSERT INTO
         portfolio (
+            user_id,
             ticker, 
             position_type,
             position, 
@@ -19,6 +20,7 @@ if (new.position_type > 0 and new.action > 0) then
         )
     values 
         (
+            new.user_id, 
             new.ticker, 
             new.position_type,
             new.no_shares,
@@ -57,6 +59,7 @@ elseif (new.position_type > 0 and new.action < 0) then
 elseif (new.position_type < 0 and new.action < 0) then
     INSERT INTO
         portfolio (
+            user_id, 
             ticker, 
             position_type,
             position, 
@@ -69,6 +72,7 @@ elseif (new.position_type < 0 and new.action < 0) then
         )
     values 
         (
+            new.user_id,
             new.ticker,
             new.position_type,
             new.no_shares * -1.0,
