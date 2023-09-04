@@ -347,7 +347,7 @@ def Portfolio(base):
         ):
             """
             These values will be auto-calculated by 
-            './stock_returns/trigger.sql'.
+            './stock_returns/sql/trans_to_port_trig.sql'.
 
             Parameters
             --------------------------------------------------
@@ -528,7 +528,7 @@ class Create:
         ),
         time_step='1m',
         with_trigger=True,
-        trigger_path='./stock_returns/trigger.sql',
+        trigger_path='./stock_returns/sql/trans_to_port_trig.sql',
         with_investments=True,
         drop_db_if_exists=True,
     ):
