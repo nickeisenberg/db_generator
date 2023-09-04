@@ -31,7 +31,7 @@ df = pd.read_sql(query, engine)
 print(df)
 
 query = "select * from transaction_history "
-query += "where user_id = 1 and ticker = 'AMZN' and position_type = 1"
+query += "where user_id = 1 and ticker = 'AMZN' and position_type = -1"
 df = pd.read_sql(query, engine)
 print(df)
 
