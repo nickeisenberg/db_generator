@@ -7,7 +7,7 @@ import numpy as np
 import datetime as dt
 import yfinance as yf
 import pandas as pd
-from stock_returns.utils import convert_sql_trigger_to_string
+from stock_returns.utils import convert_sql_to_string
 
 
 _base = Base()
@@ -598,7 +598,7 @@ class Create:
             with self.engine.connect() as conn:
                 conn.execute(
                     db.text(
-                        convert_sql_trigger_to_string(trigger_path)
+                        convert_sql_to_string(trigger_path)
                     )
                 )
                 conn.commit()
