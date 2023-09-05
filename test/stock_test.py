@@ -1,3 +1,5 @@
+import datetime as dt
+import numpy as np
 from stock_returns.create import Create
 import sqlalchemy as db
 from sqlalchemy.orm import declarative_base as Base
@@ -30,12 +32,23 @@ query = "select * from portfolio"
 df = pd.read_sql(query, engine)
 print(df)
 
-query = "select * from transaction_history "
-query += "where user_id = 1 and ticker = 'AMZN' and position_type = -1"
+# find longest chain of nan's
+query = "select open from ohlcv where ticker = 'AMZN'"
 df = pd.read_sql(query, engine)
-print(df)
+inds = np.isnan(df.values)
+df.iloc[inds] = np.repeat(999999, len(df.iloc[np.isnan(df.values)]))
+nan_in_a_row = df.values.reshape(-1)
+nan_in_a_row = np.where(
+    np.diff(np.hstack(([False], nan_in_a_row==999999, [False])))
+)[0].reshape((-1, 2))
+print(nan_in_a_row[np.argmax(np.diff(nan_in_a_row, axis=1))])
 
 query = f"select datetime from ohlcv"
 dates = pd.read_sql(
     query, engine
 )['datetime'].values.astype(str)
+
+d = dates[0]
+l = d[:10]
+r = d[11: -10]
+d = l + ' ' + r

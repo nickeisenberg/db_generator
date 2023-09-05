@@ -547,6 +547,8 @@ class Create:
         with_trigger=True,
         trigger_path='./stock_returns/sql/trans_to_port_trig.sql',
         with_investments=True,
+        make_nans=20,
+        max_nans_in_a_row=5,
         drop_db_if_exists=True,
     ):
         """
@@ -590,6 +592,15 @@ class Create:
 
         with_investments : boolean, Default True
             Will generate investments and auto update the porfolio.
+
+        make_nans : int, Default 20
+            This will randomly select make_nans many dates for the open, high,
+            low, close and volume columns to set to None.
+
+        max_nans_in_a_row : int, Default 5
+            This will randomly select a number 1 to max_nans_in_a_row for each 
+            date from the randomly selected date from make_nans and then set 
+            that many timestamps in a row to None.
 
         drop_db_if_exists : boolean, Default True
             Will drop the database and recreate it if already exists.
@@ -708,10 +719,12 @@ class Create:
             
             session  = sessionmaker(bind=self.engine)()
             
+            dates_used = np.array([])
             for user_id in range(1, no_investors + 1):
                 for ticker in long_invs.keys():
                     for trans in long_invs[ticker]:
                         datetime, action, no_shares = trans
+                        dates_used = np.append(dates_used, datetime)
                         l = datetime[:10]
                         r = datetime[11: -10]
                         query = f"select open from ohlcv "
@@ -736,6 +749,7 @@ class Create:
                 for ticker in short_invs.keys():
                     for trans in short_invs[ticker]:
                         datetime, action, no_shares = trans 
+                        dates_used = np.append(dates_used, datetime)
                         l = datetime[:10]
                         r = datetime[11: -10]
                         query = f"select open from ohlcv "
@@ -755,6 +769,29 @@ class Create:
                             open
                         )
                         session.add(transaction)
+
+            if make_nans > 0:
+                dates_not_used = np.setdiff1d(dates, dates_used)
+                for col in ['open', 'high', 'low', 'close', 'volume']:
+                    rm_dates = np.random.choice(dates_not_used, make_nans)
+                    for date in rm_dates:
+                        l = date[:10]
+                        r = date[11: -10]
+                        date = l + ' ' + r
+                        in_a_row = np.random.randint(1, 5)
+                        for i in range(in_a_row):
+                            d = dt.datetime.strptime(
+                                date, '%Y-%m-%d %H:%M:%S'
+                            ) + dt.timedelta(seconds=60 * i)
+                            d = dt.datetime.strftime(d, '%Y-%m-%d %H:%M:%S')
+                            with self.engine.connect() as conn:
+                                query = f"update ohlcv "
+                                query += f"set {col} = NULL "
+                                query += f"where datetime = '{d}'"
+                                conn.execute(
+                                    db.text(query)
+                                )
+                                conn.commit()
 
             session.commit()
             session.close()
