@@ -709,18 +709,18 @@ class Create:
                 query, self.engine
             )['datetime'].values.astype(str)
 
-            long_invs = {
-                t: transaction_chain(1.0, 5, dates) for t in tickers
-            }
-
-            short_invs = {
-                t: transaction_chain(-1.0, 5, dates) for t in tickers
-            }
-            
             session  = sessionmaker(bind=self.engine)()
             
             dates_used = np.array([])
             for user_id in range(1, no_investors + 1):
+
+                long_invs = {
+                    t: transaction_chain(1.0, 5, dates) for t in tickers
+                }
+                short_invs = {
+                    t: transaction_chain(-1.0, 5, dates) for t in tickers
+                }
+
                 for ticker in long_invs.keys():
                     for trans in long_invs[ticker]:
                         datetime, action, no_shares = trans
