@@ -107,20 +107,25 @@ def transaction_chain(
         
     """
     
-    trans_dates = np.sort(np.random.choice(dates, no_investments))
+    trans_dates = np.sort(
+        np.random.choice(dates, no_investments, replace=False)
+    )
 
     first_trans_size = np.random.randint(20, 500)
-
-    trans_types = [trans_type]
+    
+    # initialize the first transaction
+    actions = [trans_type]
     trans_sizes = [first_trans_size]
-
+    
+    # position size must be positive for long and negative for short.
+    # 0 means the position is closed
     trans_type_total = first_trans_size
     kill_total = 0
 
     for i in range(no_investments - 1):
 
         action = np.random.choice([1.0, -1.0])
-        trans_types.append(action)
+        actions.append(action)
 
         trans_size = np.random.randint(1, first_trans_size)
 
@@ -139,10 +144,10 @@ def transaction_chain(
         if trans_type_total == kill_total:
             break
     
-    trans_dates = trans_dates[: len(trans_types)]
+    trans_dates = trans_dates[: len(actions)]
 
     trans_history = [
-        (d, a, s) for d, a, s in zip(trans_dates, trans_types, trans_sizes)
+        (d, a, s) for d, a, s in zip(trans_dates, actions, trans_sizes)
     ]
 
     return trans_history

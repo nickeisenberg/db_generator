@@ -713,12 +713,17 @@ class Create:
             
             dates_used = np.array([])
             for user_id in range(1, no_investors + 1):
-
+                
+                # num_longs = np.random.choice(np.arange(5))
+                num_longs = 3
                 long_invs = {
-                    t: transaction_chain(1.0, 5, dates) for t in tickers
+                    t: transaction_chain(1.0, num_longs, dates) for t in tickers
                 }
+
+                # num_shorts = np.random.choice(np.arange(5))
+                num_shorts = 2
                 short_invs = {
-                    t: transaction_chain(-1.0, 5, dates) for t in tickers
+                    t: transaction_chain(-1.0, num_shorts, dates) for t in tickers
                 }
 
                 for ticker in long_invs.keys():
@@ -730,20 +735,21 @@ class Create:
                         query = f"select open from ohlcv "
                         query += f"where datetime = '{l + ' ' + r}' "
                         query += f"and ticker = '{ticker}'"
-                        open = pd.read_sql(
+                        at_price = pd.read_sql(
                             query, self.engine
                         )['open'].values[0]
 
                         transaction = self.TransactionHistory(
-                            user_id, 
+                            user_id,
                             datetime, 
                             ticker, 
                             1,
                             action, 
-                            no_shares, 
-                            open
+                            no_shares,
+                            at_price
                         )
                         session.add(transaction)
+
 
             for user_id in range(1, no_investors + 1):
                 for ticker in short_invs.keys():
@@ -778,7 +784,7 @@ class Create:
                         l = date[:10]
                         r = date[11: -10]
                         date = l + ' ' + r
-                        in_a_row = np.random.randint(1, 5)
+                        in_a_row = np.random.randint(1, max_nans_in_a_row)
                         for i in range(in_a_row):
                             d = dt.datetime.strptime(
                                 date, '%Y-%m-%d %H:%M:%S'
@@ -797,5 +803,6 @@ class Create:
             session.close()
 
         return None
+
 
 
