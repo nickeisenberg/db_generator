@@ -157,7 +157,20 @@ def transaction_chain(
 class Debug:
     """
     A simple debugger that checks if the portfolio matches up with the 
-    transaction_history after the fact.
+    transaction_history after the fact. This debugger will check the 
+    transaction history and see the portfolio has the correct position size.
+
+    Example Usage
+    -------------
+
+    import sqlalchemy as db 
+
+    engine = db.create_engine(...)
+
+    debug = Debug(engine)
+    
+    # Display the discrepencies in the long position and and short positions.
+    debug.debug
     """
 
     def __init__(self, engine):

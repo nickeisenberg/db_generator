@@ -40,9 +40,6 @@ query = "select * from portfolio"
 port_df = pd.read_sql(query, engine)
 print(port_df)
 
-(trans_df.no_shares * trans_df.action).sum()
-
-
 #--------------------------------------------------
 # find longest chain of nan's
 query = "select open from ohlcv where ticker = 'AMZN'"
@@ -54,13 +51,3 @@ nan_in_a_row = np.where(
     np.diff(np.hstack(([False], nan_in_a_row==999999, [False])))
 )[0].reshape((-1, 2))
 print(nan_in_a_row[np.argmax(np.diff(nan_in_a_row, axis=1))])
-
-query = f"select datetime from ohlcv"
-dates = pd.read_sql(
-    query, engine
-)['datetime'].values.astype(str)
-
-d = dates[0]
-l = d[:10]
-r = d[11: -10]
-d = l + ' ' + r
