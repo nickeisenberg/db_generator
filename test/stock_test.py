@@ -5,6 +5,7 @@ import sqlalchemy as db
 from sqlalchemy.orm import declarative_base as Base
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
+from stock_returns.utils import Debug
 
 engine = db.create_engine(
     "mysql+pymysql://root:@127.0.0.1:3306/stock_return?unix_socket=/tmp/mysql.sock"
@@ -13,28 +14,10 @@ engine = db.create_engine(
 base = Base()
 database = Create(engine=engine, base=base)
 
-database.initialize(with_entries=False, no_investors=1, tickers=['SPY', 'GME'])
+database.initialize()
 
-database.initialize(no_investors=1, tickers=['SPY', 'GME'])
-
-
-#--------------------------------------------------
-query = "show columns from transaction_history"
-trans_cols = pd.read_sql(query, engine)['Field'].values
-
-session = sessionmaker(bind=engine)()
-for i in range(5):
-    entry = thist(1, dt.datetime(2000, 1, i + 1), 'gme', 1, -1 ** i, 5 + i, 10)
-    session.add(entry)
-session.commit()
-
-query = "select * from transaction_history "
-trans_df = pd.read_sql(query, engine)
-print(trans_df.head(50))
-
-query = "select * from portfolio "
-trans_df = pd.read_sql(query, engine)
-print(trans_df.head(50))
+debug = Debug(engine)
+debug.debug
 
 #--------------------------------------------------
 

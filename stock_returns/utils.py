@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 def convert_sql_to_string(filepath):
     """
@@ -151,3 +152,93 @@ def transaction_chain(
     ]
 
     return trans_history
+
+
+class Debug:
+    """
+    A simple debugger that checks if the portfolio matches up with the 
+    transaction_history after the fact.
+    """
+
+    def __init__(self, engine):
+        self.engine = engine
+        self.trans_df = pd.read_sql(
+            "select * from transaction_history", 
+            engine
+        )
+        self.port_df = pd.read_sql(
+            "select * from portfolio", 
+            engine
+        )
+        self.users = np.unique(self.trans_df['user_id'])
+
+    def debug_long(self, verbose=False, from_debug=False):
+        bad_count = 0
+        for user in self.users:
+            query = "select ticker from portfolio "
+            query += f"where user_id = {user} and position_type = 1"
+            tickers = np.unique(pd.read_sql(query, self.engine).values)
+            if verbose:
+                print(f"Starting the long debug for user {user}")
+                print(f"----------------------------------")
+            for ticker in tickers:
+                if verbose:
+                    print(f"Debug for {ticker}")
+                query = f"ticker == '{ticker}' "
+                query += f"and user_id == {user}"
+                query += "and position_type == 1"
+
+                _trans_df = self.trans_df.query(query)
+                tpos = (_trans_df['action'] * _trans_df['no_shares']).sum()
+
+                ppos = self.port_df.query(query)['position'].values[0]
+                
+                if tpos - ppos != 0:
+                    bad_count += 1
+
+        if from_debug:
+            return bad_count
+
+        if bad_count == 0:
+            print('all good')
+        else:
+            print('error')
+
+    def debug_short(self, verbose=False, from_debug=False):
+        bad_count = 0
+        for user in self.users:
+            query = "select ticker from portfolio "
+            query += f"where user_id = {user} and position_type = -1"
+            tickers = np.unique(pd.read_sql(query, self.engine).values)
+            if verbose:
+                print(f"Starting the short debug for user {user}")
+                print(f"----------------------------------")
+            for ticker in tickers:
+                if verbose:
+                    print(f"Debug for {ticker}")
+                query = f"ticker == '{ticker}' "
+                query += f"and user_id == {user}"
+                query += "and position_type == -1"
+
+                _trans_df = self.trans_df.query(query)
+                tpos = (_trans_df['action'] * _trans_df['no_shares']).sum()
+
+                ppos = self.port_df.query(query)['position'].values[0]
+                
+                if tpos - ppos != 0:
+                    bad_count += 1
+        
+        if from_debug:
+            return bad_count
+
+        if bad_count == 0:
+            print('all good')
+        else:
+            print('error')
+
+    @property
+    def debug(self):
+        long = self.debug_long(from_debug=True)
+        short = self.debug_short(from_debug=True)
+        print(f"long errors {long} short error {short}")
+

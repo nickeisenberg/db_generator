@@ -1,9 +1,4 @@
-"""
-There is a bug that I need to fix. The trigger seems to be updated more than
-it should.
-"""
-
-
+import numpy as np
 import datetime as dt
 import pandas as pd
 import stock_returns.create as src
@@ -11,6 +6,7 @@ import stock_returns.utils as utils
 from sqlalchemy_utils import drop_database, database_exists, create_database
 from sqlalchemy.orm import declarative_base, sessionmaker
 import sqlalchemy as db
+
 
 # set up the engine
 engine = db.create_engine(
@@ -43,6 +39,7 @@ with engine.connect() as conn:
     )
     conn.commit()
 
+
 # start the session
 session = sessionmaker(bind=engine)()
 
@@ -52,35 +49,34 @@ for i in range(1, 3):
         1, dt.datetime(2000, 1, i), 'abc', 1, 1, 10, 10
     )
     session.add(entry)
-session.commit()
-
-# add rows for user 2
-for i in range(1, 3):
     entry = TransactionHistory(
-        2, dt.datetime(2000, 1, i), 'abc', 1, 1, 5, 5
+        2, dt.datetime(2000, 1, i), 'abc', 1, 1, 10, 10
     )
     session.add(entry)
 session.commit()
 
-# everything looks good
-query = "select * from transaction_history"
-pd.read_sql(query, engine)
-
-query = "select * from portfolio"
-pd.read_sql(query, engine)
-
-# add some sells for user 1 only
+# add rows for user 1
 for i in range(1, 3):
     entry = TransactionHistory(
-        1, dt.datetime(2000, 1, i + 2), 'abc', 1, -1, 5, 20
+        1, dt.datetime(2000, 1, i + 2), 'abc', 1, -1, 2, 10
     )
     session.add(entry)
 session.commit()
 
-# the sells affected both users.
-# there is something wrong with the trigger that I need to fix
-query = "select * from transaction_history"
-pd.read_sql(query, engine)
+debug = utils.Debug(engine)
 
-query = "select * from portfolio"
-pd.read_sql(query, engine)
+debug.debug
+
+debug.trans_df
+
+query = "select ticker from transaction_history "
+query += f"where user_id = 1"
+np.unique(pd.read_sql(query, engine).values)
+
+
+query = f"ticker == 'abc' "
+query += f"and user_id == 1"
+query += "and position_type == 1"
+debug.port_df.query(query)['position'].values[0]
+
+_trans_df = self.trans_df.query(query)

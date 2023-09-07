@@ -55,7 +55,12 @@ elseif (new.position_type > 0 and new.action < 0) then
         gain = 100.0 * (
             current_value + realized_profit - total_invested 
         ) / total_invested
-    where position_type = new.position_type and ticker = new.ticker;
+    where  
+        user_id = new.user_id
+        and
+        position_type = new.position_type 
+        and 
+        ticker = new.ticker;
 elseif (new.position_type < 0 and new.action < 0) then
     INSERT INTO
         portfolio (
@@ -103,6 +108,11 @@ elseif (new.position_type < 0 and new.action > 0) then
         current_value = position * new.at_price,
         realized_profit = realized_profit - (new.at_price * new.no_shares),
         gain = 100.0 * (realized_profit + current_value) / realized_profit
-    where position_type = new.position_type and ticker = new.ticker;
+    where 
+        user_id = new.user_id 
+        and 
+        position_type = new.position_type 
+        and 
+        ticker = new.ticker;
 end if;
 end;
