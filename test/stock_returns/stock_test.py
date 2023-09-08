@@ -14,7 +14,7 @@ engine = db.create_engine(
 base = Base()
 database = Create(engine=engine, base=base)
 
-database.initialize()
+database.initialize(tickers = ['SPY'])
 
 debug = Debug(engine)
 debug.debug

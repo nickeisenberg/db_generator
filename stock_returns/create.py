@@ -661,6 +661,10 @@ class Create:
                 prepost=True
             )
 
+            if len(tickers) == 1:
+                col = pd.MultiIndex.from_product([df.columns.values, tickers])
+                df = df.set_axis(col, axis=1)
+
             # remove the GMT time part that yfinaces gives
             df.index = df.index.to_series().apply(
                 lambda x: str(x)[: -6]
