@@ -185,21 +185,22 @@ class Debug:
         )
         self.users = np.unique(self.trans_df['user_id'])
 
-    def debug_long(self, verbose=False, from_debug=False):
+    def _debug(self, p_type=1, verbose=False, from_debug=False):
         bad_count = 0
+        id = {1: 'long', -1: 'short'}
         for user in self.users:
             query = "select ticker from portfolio "
-            query += f"where user_id = {user} and position_type = 1"
+            query += f"where user_id = {user} and position_type = {p_type}"
             tickers = np.unique(pd.read_sql(query, self.engine).values)
             if verbose:
-                print(f"Starting the long debug for user {user}")
+                print(f"Starting the {id[p_type]} debug for user {user}")
                 print(f"----------------------------------")
             for ticker in tickers:
                 if verbose:
                     print(f"Debug for {ticker}")
                 query = f"ticker == '{ticker}' "
                 query += f"and user_id == {user}"
-                query += "and position_type == 1"
+                query += f"and position_type == {p_type}"
 
                 _trans_df = self.trans_df.query(query)
                 tpos = (_trans_df['action'] * _trans_df['no_shares']).sum()
@@ -209,38 +210,6 @@ class Debug:
                 if tpos - ppos != 0:
                     bad_count += 1
 
-        if from_debug:
-            return bad_count
-
-        if bad_count == 0:
-            print('all good')
-        else:
-            print('error')
-
-    def debug_short(self, verbose=False, from_debug=False):
-        bad_count = 0
-        for user in self.users:
-            query = "select ticker from portfolio "
-            query += f"where user_id = {user} and position_type = -1"
-            tickers = np.unique(pd.read_sql(query, self.engine).values)
-            if verbose:
-                print(f"Starting the short debug for user {user}")
-                print(f"----------------------------------")
-            for ticker in tickers:
-                if verbose:
-                    print(f"Debug for {ticker}")
-                query = f"ticker == '{ticker}' "
-                query += f"and user_id == {user}"
-                query += "and position_type == -1"
-
-                _trans_df = self.trans_df.query(query)
-                tpos = (_trans_df['action'] * _trans_df['no_shares']).sum()
-
-                ppos = self.port_df.query(query)['position'].values[0]
-                
-                if tpos - ppos != 0:
-                    bad_count += 1
-        
         if from_debug:
             return bad_count
 
@@ -251,7 +220,49 @@ class Debug:
 
     @property
     def debug(self):
-        long = self.debug_long(from_debug=True)
-        short = self.debug_short(from_debug=True)
+        long = self._debug(p_type=1, from_debug=True)
+        short = self._debug(p_type=-1, from_debug=True)
         print(f"long errors {long} short error {short}")
 
+
+def longest_chain_of_nans(engine, ticker, ohlcv='open', table='ohlcv'):
+    """
+    During pre and post market when liquidity is low, if there is a period 
+    where not trades were made, yfinance inputs this as a NaN. Its often 
+    useful to know that longest chain of NaNs. This function will return the 
+    location of the longest chain of NaNs in the ohlcv table for a given 
+    ticker. It is completly vecotorized with numpy functions.
+
+    Parameters
+    ----------
+
+    engine: sqlachemy engine
+    
+    ticker: str
+
+    ohlcv: str Default 'open'
+        Either 'open', 'high', 'low', 'close', or 'volumne'. However, I don't 
+        believe it matters which one you choose.
+
+    table: str Default 'ohlcv'
+        The name of the table.
+
+    Returns
+    -------
+
+    nan_loc: np.array
+        The index locations of the start and end of the longest chain of NaNs.
+
+    """
+
+    query = f"select {ohlcv} from {table} where ticker = '{ticker}'"
+    df = pd.read_sql(query, engine)
+    inds = np.isnan(df.values)
+    df.iloc[inds] = np.repeat(999999, len(df.iloc[np.isnan(df.values)]))
+    nan_in_a_row = df.values.reshape(-1)
+    nan_in_a_row = np.where(
+        np.diff(np.hstack(([False], nan_in_a_row==999999, [False])))
+    )[0].reshape((-1, 2))
+    nan_loc = nan_in_a_row[np.argmax(np.diff(nan_in_a_row, axis=1))]
+
+    return nan_loc

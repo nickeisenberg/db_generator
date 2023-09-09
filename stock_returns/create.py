@@ -183,7 +183,6 @@ def TransactionHistory(base):
     session.close()
     """
 
-
     class _TransactionHistory(base):
         # table name for User model
         __tablename__ = "transaction_history"
@@ -202,7 +201,8 @@ def TransactionHistory(base):
             db.String(6),
         )
         position_type = db.Column(
-            db.Integer()
+            db.Integer(), 
+            db.CheckConstraint("position_type = 1 or position_type = -1")
         )
         action = db.Column(
             db.Integer()
@@ -332,7 +332,10 @@ def Portfolio(base):
             db.String(6), primary_key=True, autoincrement=False
         )
         position_type = db.Column(
-            db.Integer, primary_key=True, autoincrement=False
+            db.Integer(), 
+            db.CheckConstraint("position_type = 1 or position_type = -1"),
+            primary_key=True,
+            autoincrement=False
         )
         position = db.Column(
             db.Integer()

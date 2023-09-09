@@ -5,7 +5,7 @@ import sqlalchemy as db
 from sqlalchemy.orm import declarative_base as Base
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
-from stock_returns.utils import Debug
+from stock_returns.utils import Debug, longest_chain_of_nans
 
 engine = db.create_engine(
     "mysql+pymysql://root:@127.0.0.1:3306/stock_return?unix_socket=/tmp/mysql.sock"
@@ -14,40 +14,60 @@ engine = db.create_engine(
 base = Base()
 database = Create(engine=engine, base=base)
 
-database.initialize(tickers = ['SPY'])
+database.initialize(tickers = ['SPY'], no_investors=1, make_nans=0)
 
 debug = Debug(engine)
 debug.debug
 
+
 #--------------------------------------------------
+# check if the trigger works after the fact
 
-query = "show columns from transaction_history"
-df = pd.read_sql(query, engine)
-print(df)
+query = "select * from transaction_history where position_type = 1"
+trans_df0 = pd.read_sql(query, engine)
+query = "select * from portfolio where position_type = 1"
+port_df0 = pd.read_sql(query, engine)
 
-query = "show columns from portfolio"
-df = pd.read_sql(query, engine)
-print(df)
+# create a new session and add a transaction to see of the portfolio updates
+engine = db.create_engine(
+    "mysql+pymysql://root:@127.0.0.1:3306/stock_return?unix_socket=/tmp/mysql.sock"
+)
+session = sessionmaker(engine)()
 
-query = "select * from transaction_history "
-# query += " where ticker = 'GME' and user_id = 1 and position_type = 1"
+base = Base()
+transaction = TransactionHistory(base)
+
+entry = transaction(1, dt.datetime(2000, 1, 1), 'SPY', 1, 1, 99, 99)
+
+session.add(entry)
+session.commit()
+
+query = "select * from transaction_history where position_type = 1"
 trans_df = pd.read_sql(query, engine)
-print(trans_df.head(50))
-
-query = "select * from portfolio"
-# query = "select user_id, ticker, position, current_value, position_type from portfolio"
-# query += " where ticker = 'GME' and user_id = 1 and position_type = 1"
+query = "select * from portfolio where position_type = 1"
 port_df = pd.read_sql(query, engine)
-print(port_df)
+
+trans_df0
+trans_df
+
+port_df0
+port_df
 
 #--------------------------------------------------
+
+# see if the position_type check works
+query = "show columns from transaction_history"
+trans_df = pd.read_sql(query, engine)
+
+insert_bad_trans = pd.DataFrame(
+    data=[[1, 100, dt.datetime(2000, 1, 1), 'ABC', 2, 1, 100, 10]],
+    columns = trans_df['Field']
+)
+insert_bad_trans.to_sql('transaction_history', engine, if_exists='append', index=False)
+
+#--------------------------------------------------
+
 # find longest chain of nan's
-query = "select open from ohlcv where ticker = 'AMZN'"
-df = pd.read_sql(query, engine)
-inds = np.isnan(df.values)
-df.iloc[inds] = np.repeat(999999, len(df.iloc[np.isnan(df.values)]))
-nan_in_a_row = df.values.reshape(-1)
-nan_in_a_row = np.where(
-    np.diff(np.hstack(([False], nan_in_a_row==999999, [False])))
-)[0].reshape((-1, 2))
-print(nan_in_a_row[np.argmax(np.diff(nan_in_a_row, axis=1))])
+
+longest_chain_of_nans(engine, 'SPY')
+
