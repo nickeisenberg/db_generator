@@ -1,3 +1,9 @@
+"""
+There was a bug in the transaction history and portfolio due to the trigger.
+This script was verifying that everything is now fixed.
+"""
+
+
 import numpy as np
 import datetime as dt
 import pandas as pd

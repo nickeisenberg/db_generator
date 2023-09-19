@@ -1,3 +1,9 @@
+"""
+There was an issue when initializing the stock market database if only one
+ticker was entered. The script was to investigate the best way to handle the
+issue
+"""
+
 import yfinance as yf
 import datetime as dt
 import pandas as pd
