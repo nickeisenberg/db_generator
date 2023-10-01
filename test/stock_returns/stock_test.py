@@ -1,3 +1,4 @@
+import platform
 import datetime as dt
 import numpy as np
 from stock_returns.create import Create, TransactionHistory
@@ -7,9 +8,16 @@ from sqlalchemy.orm import sessionmaker
 import pandas as pd
 from stock_returns.utils import Debug, longest_chain_of_nans
 
-engine = db.create_engine(
-    "mysql+pymysql://root:@127.0.0.1:3306/stock_return?unix_socket=/tmp/mysql.sock"
-)
+p='boomhower'
+
+if platform.system() == 'Linux':
+    engine = db.create_engine(
+        f"mysql+pymysql://root:{p}@127.0.0.1:3306/stock_return"
+    )
+else:    
+    engine = db.create_engine(
+        f"mysql+pymysql://root:{p}@127.0.0.1:3306/stock_return?unix_socket=/tmp/mysql.sock"
+    )
 
 base = Base()
 database = Create(engine=engine, base=base)
