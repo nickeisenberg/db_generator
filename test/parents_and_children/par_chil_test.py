@@ -1,17 +1,30 @@
+import platform
+import json
 import sqlalchemy as db
 from parents_and_children.create import Create
 from sqlalchemy.orm import declarative_base as Base
 import pandas as pd
+
 
 # sqlite
 path = "<path_to_where_you_want_you_sqlite.db_file>"
 engine = db.create_engine(f'sqlite:///{path}')
 
 # mysql
+with open("/home/nicholas/GitRepos/password.json") as oj:
+    pw = json.load(oj)
+
+p=pw['mysql_root']
 dbname = 'parents_and_children'
-engine = db.create_engine(
-    f"mysql+pymysql://root:@127.0.0.1:3306/{dbname}?unix_socket=/tmp/mysql.sock"
-)
+if platform.system() == 'Linux':
+    engine = db.create_engine(
+        f"mysql+pymysql://root:{p}@127.0.0.1:3306/{dbname}"
+    )
+else:    
+    engine = db.create_engine(
+        f"mysql+pymysql://root:{p}@127.0.0.1:3306/{dbname}?unix_socket=/tmp/mysql.sock"
+    )
+
 
 base = Base()
 database = Create(engine=engine, base=base)
