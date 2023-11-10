@@ -8,8 +8,11 @@ from sqlalchemy.orm import declarative_base as Base
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
 from stock_returns.utils import Debug, longest_chain_of_nans
+import os
 
-with open("/home/nicholas/GitRepos/password.json") as oj:
+HOME = os.environ['HOME']
+
+with open(f"{HOME}/.credentials/password.json") as oj:
     pw = json.load(oj)
 
 p=pw['mysql_root']
@@ -25,7 +28,7 @@ else:
 base = Base()
 database = Create(engine=engine, base=base)
 
-database.initialize(tickers = ['SPY'], no_investors=1, make_nans=0)
+database.initialize(tickers = ['SPY'], no_investors=1, make_nans=1)
 
 debug = Debug(engine)
 debug.debug
@@ -86,6 +89,9 @@ insert_bad_trans.to_sql('transaction_history', engine, if_exists='append', index
 #--------------------------------------------------
 
 # find longest chain of nan's
+
+query = "select open from ohlcv where ticker = 'SPY'"
+pd.read_sql(query, engine)
 
 longest_chain_of_nans(engine, 'SPY')
 
