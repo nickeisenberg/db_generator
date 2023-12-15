@@ -26,9 +26,11 @@ details about this `Create` class are given in each subdirectory. Moreover,
 there are some questions listed in each subdirectory that you can choose to do 
 for practice.
 
-Create a venv and ensure the correct versions of each library are installed.
+# Installation
 ```
 python3 -m venv db_generator
 source db_generator/bin/activate
+git clone https://github.com/nickeisenberg/db_generator.git
+pip install .
 pip install -r dependencies.txt
 ```
