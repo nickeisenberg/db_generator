@@ -30,7 +30,7 @@ for practice.
 ```
 python3 -m venv db_generator
 source db_generator/bin/activate
-git clone https://github.com/nickeisenberg/db_generator.git
+git clone https://github.com/nickeisenberg/DatabaseGenerator.git
 pip install .
 pip install -r dependencies.txt
 ```
