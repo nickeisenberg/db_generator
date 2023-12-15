@@ -1,0 +1,16 @@
+MANIFEST.in
+README.md
+pyproject.toml
+src/dbgen/__init__.py
+src/dbgen.egg-info/PKG-INFO
+src/dbgen.egg-info/SOURCES.txt
+src/dbgen.egg-info/dependency_links.txt
+src/dbgen.egg-info/top_level.txt
+src/dbgen/parents_and_children/__init__.py
+src/dbgen/parents_and_children/constants.py
+src/dbgen/parents_and_children/create.py
+src/dbgen/stock_returns/__init__.py
+src/dbgen/stock_returns/create.py
+src/dbgen/stock_returns/utils.py
+src/dbgen/stock_returns/_sql/__init__.py
+src/dbgen/stock_returns/_sql/trigger.sql

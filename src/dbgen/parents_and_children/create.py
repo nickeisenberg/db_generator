@@ -6,7 +6,7 @@ from sqlalchemy_utils import create_database, database_exists, drop_database
 import datetime as dt
 import faker
 import numpy as np
-from parents_and_children.constants import JOBS, SALARY_AVG
+from .constants import JOBS, SALARY_AVG
 from copy import deepcopy
 
 
@@ -540,7 +540,6 @@ class SalSavStartGen:
 
 
 class Create:
-
     def __init__(
         self,
         engine,

@@ -1,21 +1,20 @@
 import platform
-import json
 import datetime as dt
 import numpy as np
-from stock_returns.create import Create, TransactionHistory
 import sqlalchemy as db
 from sqlalchemy.orm import declarative_base as Base
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
-from stock_returns.utils import Debug, longest_chain_of_nans
 import os
 
-HOME = os.environ['HOME']
+from dbgen.stock_returns import Create
+from dbgen.stock_returns.utils import longest_chain_of_nans
+from dbgen.stock_returns.create import TransactionHistory
 
-with open(f"{HOME}/.credentials/password.json") as oj:
-    pw = json.load(oj)
+from tests.stock_returns.utils import Debug
 
-p=pw['mysql_root']
+
+p = os.environ['MYSQL_ROOT']
 if platform.system() == 'Linux':
     engine = db.create_engine(
         f"mysql+pymysql://root:{p}@127.0.0.1:3306/stock_return"
@@ -44,7 +43,6 @@ port_df0 = pd.read_sql(query, engine)
 
 # create a new session and add a transaction to see of the portfolio updates
 
-p=pw['mysql_root']
 if platform.system() == 'Linux':
     engine = db.create_engine(
         f"mysql+pymysql://root:{p}@127.0.0.1:3306/stock_return"

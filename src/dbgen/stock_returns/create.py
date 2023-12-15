@@ -1,3 +1,5 @@
+from importlib import resources
+from types import NoneType
 import sqlalchemy as db
 from sqlalchemy import event
 from sqlalchemy.orm import declarative_base as Base
@@ -7,7 +9,7 @@ import numpy as np
 import datetime as dt
 import yfinance as yf
 import pandas as pd
-from stock_returns.utils import convert_sql_to_string, transaction_chain
+from .utils import convert_sql_to_string, transaction_chain
 
 
 _base = Base()
@@ -537,22 +539,22 @@ class Create:
 
     def initialize(
         self,
-        with_entries=True,
-        no_investors = 5,
-        tickers = ['SPY', 'NVDA', 'AMZN'],
-        start = dt.datetime.now().replace(
+        with_entries: bool = True,
+        no_investors: int = 5,
+        tickers: list[str] = ['SPY', 'NVDA', 'AMZN'],
+        start: dt.datetime = dt.datetime.now().replace(
             hour=4-3, minute=0, second=0, microsecond=0
         ) - dt.timedelta(days=29),
-        end = dt.datetime.now().replace(
+        end: dt.datetime = dt.datetime.now().replace(
             hour=20-3, minute=0, second=0, microsecond=0
         ),
-        time_step='1m',
-        with_trigger=True,
-        trigger_path='./stock_returns/sql/trans_to_port_trig.sql',
-        with_investments=True,
-        make_nans=20,
-        max_nans_in_a_row=5,
-        drop_db_if_exists=True,
+        time_step: str = '1m',
+        with_trigger: bool = True,
+        trigger_path: str | NoneType = None,
+        with_investments: bool = True,
+        make_nans: int = 20,
+        max_nans_in_a_row: int = 5,
+        drop_db_if_exists: bool = True,
     ):
         """
         This function will initialize the database, create the tables and then
@@ -630,13 +632,22 @@ class Create:
         self.base.metadata.create_all(bind=self.engine)
         
         if with_trigger:
-            with self.engine.connect() as conn:
-                conn.execute(
-                    db.text(
-                        convert_sql_to_string(trigger_path)
+            if trigger_path is None:
+                with resources.open_text(
+                    'dbgen.stock_returns._sql', 'trigger.sql'
+                ) as file:
+                    sql_content = file.read()
+        
+                with self.engine.connect() as conn:
+                    conn.execute(db.text(sql_content))
+            else:
+                with self.engine.connect() as conn:
+                    conn.execute(
+                        db.text(
+                            convert_sql_to_string(trigger_path)
+                        )
                     )
-                )
-                conn.commit()
+                    conn.commit()
 
         self._initialized = True
         
