@@ -5,14 +5,7 @@ import pandas as pd
 import os
 from dbgen.parents_and_children import Create
 
-
-# sqlite
-path = "<path_to_where_you_want_you_sqlite.db_file>"
-engine = db.create_engine(f'sqlite:///{path}')
-
-# mysql
 p = os.environ['MYSQL_ROOT']
-
 dbname = 'parents_and_children'
 if platform.system() == 'Linux':
     engine = db.create_engine(
@@ -23,9 +16,7 @@ else:
         f"mysql+pymysql://root:{p}@127.0.0.1:3306/{dbname}?unix_socket=/tmp/mysql.sock"
     )
 
-
-base = Base()
-database = Create(engine=engine, base=base)
+database = Create(engine=engine)
 database.initialize(
         no_jobs=5,  # there are 15 possible jobs
         include_unemployed=True,  # this will include unemployment
@@ -37,9 +28,6 @@ database.initialize(
         numpy_seed=0
     )
 
-#--------------------------------------------------
-
-# run some queries
 
 query = 'select * from children where same_residence = 1'
 df = pd.read_sql(query, con=engine)

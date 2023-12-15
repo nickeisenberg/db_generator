@@ -10,7 +10,6 @@ import os
 from dbgen.stock_returns import Create
 from dbgen.stock_returns.utils import longest_chain_of_nans
 from dbgen.stock_returns.create import TransactionHistory
-
 from tests.stock_returns.utils import Debug
 
 
@@ -24,14 +23,12 @@ else:
         f"mysql+pymysql://root:{p}@127.0.0.1:3306/stock_return?unix_socket=/tmp/mysql.sock"
     )
 
-base = Base()
-database = Create(engine=engine, base=base)
+database = Create(engine=engine)
 
 database.initialize(tickers = ['SPY'], no_investors=1, make_nans=1)
 
 debug = Debug(engine)
 debug.debug
-
 
 #--------------------------------------------------
 # check if the trigger works after the fact

@@ -348,7 +348,7 @@ def Portfolio(base):
         current_value = db.Column(db.Float())
         realized_profit = db.Column(db.Float())
         gain = db.Column(db.Float())
-     
+
         def __init__(
             self,
             user_id,
@@ -738,11 +738,6 @@ class Create:
                     t: transaction_chain(1.0, num_longs, dates) for t in tickers
                 }
 
-                # num_shorts = np.random.choice(np.arange(5))
-                num_shorts = 2
-                short_invs = {
-                    t: transaction_chain(-1.0, num_shorts, dates) for t in tickers
-                }
 
                 for ticker in long_invs.keys():
                     for trans in long_invs[ticker]:
@@ -770,6 +765,13 @@ class Create:
 
 
             for user_id in range(1, no_investors + 1):
+
+                # num_shorts = np.random.choice(np.arange(5))
+                num_shorts = 2
+                short_invs = {
+                    t: transaction_chain(-1.0, num_shorts, dates) for t in tickers
+                }
+
                 for ticker in short_invs.keys():
                     for trans in short_invs[ticker]:
                         datetime, action, no_shares = trans 
