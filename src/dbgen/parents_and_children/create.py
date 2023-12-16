@@ -120,6 +120,7 @@ def Mailing(base):
 
     return _Mailing
 
+
 def Employment(base):
     """
     This function takes a SQLAlchemy declarative_base and returns a SQLAlchemy 
@@ -200,6 +201,7 @@ def Employment(base):
             self.start_date = start_date
 
     return _Employment
+
 
 def Finances(base):
     """
@@ -735,14 +737,14 @@ class Create:
                 sal_sav.savings,
             )
             session.add(finances)
-        
+
         count = 0
         p = np.exp(-np.arange(6) / 1.3)
         p /= p.sum()
         pairs = []
         while count < no_children:
 
-            parent_ids = np.hstack((None, np.arange(1, no_parents)))
+            parent_ids = np.hstack((np.array([None]), np.arange(1, no_parents)))
             
             parents = np.random.choice(parent_ids, replace=False, size=2)
             
