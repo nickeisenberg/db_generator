@@ -196,3 +196,4 @@ def longest_chain_of_nans(engine, ticker, ohlcv='open', table='ohlcv'):
     nan_loc = nan_in_a_row[np.argmax(np.diff(nan_in_a_row, axis=1))]
 
     return nan_loc
+
