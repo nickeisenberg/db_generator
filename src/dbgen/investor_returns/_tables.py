@@ -93,7 +93,6 @@ class InvestorReutrns:
         self.OHLCV = OHLCV(self.base)
         self.TransactionHistory = TransactionHistory(self.base)
         self.Portfolio = Portfolio(self.base)
-        self._initialized = False
 
     def initialize(
         self,
@@ -174,9 +173,6 @@ class InvestorReutrns:
             through a trigger and all transactions will update the portfolio
             automatically.
         """
-
-        if self._initialized:
-          raise Exception("Database already initialized.")
         
         if drop_db_if_exists:
             if database_exists(self.engine.url):
@@ -204,8 +200,6 @@ class InvestorReutrns:
                         )
                     )
                     conn.commit()
-
-        self._initialized = True
         
         # batch the time for yfinance stock scraping
         elapsed_time = (end - start).total_seconds()

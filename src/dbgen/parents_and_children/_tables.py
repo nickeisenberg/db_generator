@@ -26,8 +26,6 @@ class ParentsAndChildren:
         self.Finances = Finances(self.base) 
         self.Children = Children(self.base)
 
-        self._initialized = False
-
     """
     Parameters
     --------------------------------------------------
@@ -132,9 +130,6 @@ class ParentsAndChildren:
 
         jobs.append('unemployed')
         salary_avg['unemployed'] = 0
-
-        if self._initialized:
-          raise Exception("Database already initialized.")
         
         if drop_db_if_exists:
             if database_exists(self.engine.url):
@@ -144,8 +139,6 @@ class ParentsAndChildren:
             create_database(self.engine.url) 
 
         self.base.metadata.create_all(bind=self.engine)
-
-        self._initialized = True
 
         session  = sessionmaker(bind=self.engine)()
         for _ in range(no_parents):
