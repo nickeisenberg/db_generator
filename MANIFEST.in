@@ -1,1 +1,1 @@
-include src/dbgen/stock_returns/_sql/*.sql
+include src/dbgen/investor_returns/_sql/*.sql

@@ -53,7 +53,7 @@ The following tables will be generated after following the instructions below.
 
 ```python
 import sqlalchemy as db
-from stock_returns.create import Create
+from investor_returns.create import Create
 from sqlalchemy.orm import declarative_base as Base
 import pandas as pd
 
@@ -64,7 +64,7 @@ username="root",
 password="password",
 host="127.0.0.1",
 port="3306",
-db="stock_returns",
+db="investor_returns",
 unix_socket="/tmp/mysql.sock"
 
 engine_text = f"{dialect}+{driver}"

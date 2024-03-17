@@ -60,7 +60,7 @@ class InvestorReutrns:
     password="password",
     host="127.0.0.1",
     port="3306",
-    db="stock_returns",
+    db="investor_returns",
     unix_socket="/tmp/mysql.sock"
     
     engine_text = f"{dialect}+{driver}"
@@ -147,7 +147,7 @@ class InvestorReutrns:
             If true, then the trigger will be set to auto update the 
             portfolio with the transaction_history 
 
-        trigger_path : str Default './stock_returns/trigger.sql'
+        trigger_path : str Default './investor_returns/trigger.sql'
             Defaults to a mysql trigger and needs to be updated if using a 
             different sql server.
 
@@ -190,7 +190,7 @@ class InvestorReutrns:
         if with_trigger:
             if trigger_path is None:
                 with resources.open_text(
-                    'dbgen.stock_returns._sql', 'trigger.sql'
+                    'dbgen.investor_returns._sql', 'trigger.sql'
                 ) as file:
                     sql_content = file.read()
         
@@ -725,7 +725,7 @@ def Portfolio(base) -> DeclarativeMeta:
         ):
             """
             These values will be auto-calculated by 
-            './stock_returns/sql/trans_to_port_trig.sql'.
+            './investor_returns/sql/trans_to_port_trig.sql'.
 
             Parameters
             --------------------------------------------------

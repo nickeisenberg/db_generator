@@ -1,9 +1,10 @@
 import platform
 import sqlalchemy as db
 import os
+import pandas as pd
 
-from dbgen.stock_returns import create
-from tests.stock_returns.utils import Debug
+from dbgen.investor_returns import create
+from tests.investor_returns.utils import Debug
 
 
 p = os.environ['MYSQL_ROOT']
@@ -20,3 +21,7 @@ database = create(engine=engine)
 
 debug = Debug(engine)
 debug.debug
+
+query = 'select * from transaction_history'
+df = pd.read_sql(query, con=engine)
+print(df.head())
