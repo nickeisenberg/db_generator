@@ -53,35 +53,18 @@ The following tables will be generated after following the instructions below.
 
 ```python
 import sqlalchemy as db
-from investor_returns.create import Create
-from sqlalchemy.orm import declarative_base as Base
 import pandas as pd
+from dbgen.investor_returns import create
 
-# Create the mysql engine
-dialect="mysql",
-driver="pymysql",
-username="root",
-password="password",
-host="127.0.0.1",
-port="3306",
-db="investor_returns",
-unix_socket="/tmp/mysql.sock"
-
-engine_text = f"{dialect}+{driver}"
-engine_text += f"://{username}:{password}"
-engine_text += f"@{host}:{port}/{db}?unix_socket={unix_socket}"
+database_url = "dialect+driver://username:password@host:port/database"
 
 engine = db.create_engine(
-    engine_text
+    database_url
 )
 
-base = Base()
-database = Create(engine=engine, base=base)
-
-database.initialize()
+create(engine)
 
 # query from the database into a pandas dataframe
-
 query = "select * from transaction_history"
 trans_hist = pd.read_sql(query, engine)
 
