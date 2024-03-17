@@ -28,9 +28,10 @@ for practice.
 
 # Installation
 ```
+git clone https://github.com/nickeisenberg/DatabaseGenerator.git
+cd DatabaseGenerator
 python3 -m venv db_generator
 source db_generator/bin/activate
-git clone https://github.com/nickeisenberg/DatabaseGenerator.git
-pip install .
 pip install -r dependencies.txt
+pip install .
 ```
